@@ -8,6 +8,15 @@ const Users = () => {
   const [planExpanded, setPlanExpanded] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [searchWidth, setSearchWidth] = useState('60px');
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    role: '',
+    email: '',
+    address: '',
+    department: ''
+  });
   const profileRef = useRef(null);
 
   const toggleSidebar = () => {
@@ -20,6 +29,45 @@ const Users = () => {
 
   const toggleProfileDropdown = () => {
     setProfileDropdownOpen(!profileDropdownOpen);
+  };
+
+  const handleAddUser = () => {
+    setShowAddUserModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowAddUserModal(false);
+    setShowSuccessModal(false);
+    setFormData({
+      name: '',
+      role: '',
+      email: '',
+      address: '',
+      department: ''
+    });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Here you would typically send the data to your backend
+    console.log('User data:', formData);
+    
+    // Close the form modal and show success modal
+    setShowAddUserModal(false);
+    setShowSuccessModal(true);
+    
+    // Auto close success modal after 3 seconds
+    setTimeout(() => {
+      setShowSuccessModal(false);
+    }, 3000);
   };
 
   // Close dropdown when clicking outside
@@ -250,7 +298,7 @@ const Users = () => {
 
           {/* Users Actions */}
           <div className="users-actions-section">
-            <button className="add-users-btn">
+            <button className="add-users-btn" onClick={handleAddUser}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -505,6 +553,122 @@ const Users = () => {
           </div>
         </main>
       </div>
+
+      {/* Add User Modal */}
+      {showAddUserModal && (
+        <div className="modal-overlay" onClick={handleCloseModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Add User</h2>
+              <button className="close-btn" onClick={handleCloseModal}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className="modal-form">
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="name">Name</label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder="Enter Full Name"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="role">Role</label>
+                  <input
+                    type="text"
+                    id="role"
+                    name="role"
+                    value={formData.role}
+                    onChange={handleInputChange}
+                    placeholder="Enter Role"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="form-group">
+                <label htmlFor="email">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="Enter Email"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="address">Address</label>
+                <input
+                  type="text"
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  placeholder="Street, city"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="department">Department</label>
+                <textarea
+                  id="department"
+                  name="department"
+                  value={formData.department}
+                  onChange={handleInputChange}
+                  placeholder="Detailed Description....."
+                  rows="3"
+                  required
+                />
+              </div>
+              <div className="modal-actions">
+                <button type="submit" className="add-user-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  Add User
+                </button>
+                <button type="button" className="cancel-btn" onClick={handleCloseModal}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="modal-overlay" onClick={handleCloseModal}>
+          <div className="success-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="close-btn" onClick={handleCloseModal}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+            <div className="success-content">
+              <div className="success-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22,4 12,14.01 9,11.01"></polyline>
+                </svg>
+              </div>
+              <h3>User Added Successfully</h3>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

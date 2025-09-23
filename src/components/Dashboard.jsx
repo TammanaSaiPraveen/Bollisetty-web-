@@ -244,7 +244,7 @@ const Dashboard = () => {
                 {/* Active Voters Card */}
                 <div className="stats-card active-voters">
                   <div className="stats-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                       <circle cx="9" cy="7" r="4"></circle>
                       <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -260,7 +260,7 @@ const Dashboard = () => {
                 {/* Ongoing Process Card */}
                 <div className="stats-card ongoing-process">
                   <div className="stats-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                       <polyline points="14,2 14,8 20,8"></polyline>
                       <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -305,15 +305,6 @@ const Dashboard = () => {
                       <p>Submitted on 02 Aug 2025</p>
                     </div>
                   </div>
-                  <div className="notification-item">
-                    <div className="notification-image">
-                      <div className="image-placeholder"></div>
-                    </div>
-                    <div className="notification-content">
-                      <h4>Potholes on MG Road</h4>
-                      <p>Submitted on 30 Jul 2025</p>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -324,6 +315,18 @@ const Dashboard = () => {
               <div className="calendar-widget">
                 <div className="calendar-header">
                   <h3>September</h3>
+                  <div className="calendar-nav">
+                    <button>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="15,18 9,12 15,6"></polyline>
+                      </svg>
+                    </button>
+                    <button>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="9,18 15,12 9,6"></polyline>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
                 <div className="calendar-grid">
                   <div className="calendar-weekdays">
@@ -400,20 +403,20 @@ const Dashboard = () => {
                   <div className="schedule-item">
                     <div className="schedule-content">
                       <h4>Meet at CM Camp Office</h4>
-                      <p className="schedule-location">Velangapudi, Amaravathi, AP</p>
-                      <p className="schedule-time">09:00 AM - 12:00PM</p>
+                      <p className="schedule-location">Location: Velangapudi, Amaravathi, AP</p>
+                      <p className="schedule-time">Time: 09:00 AM - 12:00PM</p>
                     </div>
                   </div>
                   <div className="schedule-item">
                     <div className="schedule-content">
                       <h4>Farmers</h4>
-                      <p className="schedule-time">09:00 AM - 12:00PM</p>
+                      <p className="schedule-time">Time: 09:00 AM - 12:00PM</p>
                     </div>
                   </div>
                   <div className="schedule-item">
                     <div className="schedule-content">
                       <h4>Farmers</h4>
-                      <p className="schedule-time">09:00 AM - 12:00PM</p>
+                      <p className="schedule-time">Time: 09:00 AM - 12:00PM</p>
                     </div>
                   </div>
                 </div>
@@ -430,11 +433,38 @@ const Dashboard = () => {
             <div className="news-list">
               <div className="news-item">
                 <div className="news-image">
-                  <div className="image-placeholder"></div>
+                  <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=120&h=120&fit=crop&crop=center" alt="Water Supply" />
                 </div>
                 <div className="news-content">
                   <h4>Water Supply Disruption</h4>
                   <p>Submitted on 02 Aug 2025</p>
+                </div>
+              </div>
+              <div className="news-item">
+                <div className="news-image">
+                  <img src="https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=120&h=120&fit=crop&crop=center" alt="Road Construction" />
+                </div>
+                <div className="news-content">
+                  <h4>Road Construction Update</h4>
+                  <p>Submitted on 01 Aug 2025</p>
+                </div>
+              </div>
+              <div className="news-item">
+                <div className="news-image">
+                  <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=120&h=120&fit=crop&crop=center" alt="Electricity" />
+                </div>
+                <div className="news-content">
+                  <h4>Power Grid Maintenance</h4>
+                  <p>Submitted on 31 Jul 2025</p>
+                </div>
+              </div>
+              <div className="news-item">
+                <div className="news-image">
+                  <img src="https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=120&h=120&fit=crop&crop=center" alt="Healthcare" />
+                </div>
+                <div className="news-content">
+                  <h4>New Health Center Opening</h4>
+                  <p>Submitted on 30 Jul 2025</p>
                 </div>
               </div>
             </div>

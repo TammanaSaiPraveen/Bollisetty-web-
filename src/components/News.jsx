@@ -6,6 +6,15 @@ import logoImage from '../assets/Images/Authoritative Government Service App Log
 const News = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [planExpanded, setPlanExpanded] = useState(false);
+  const [showAddNewsModal, setShowAddNewsModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [formData, setFormData] = useState({
+    date: '',
+    time: '',
+    title: '',
+    description: '',
+    photo: null
+  });
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -13,6 +22,53 @@ const News = () => {
 
   const togglePlanSubmenu = () => {
     setPlanExpanded(!planExpanded);
+  };
+
+  const handleAddNews = () => {
+    setShowAddNewsModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowAddNewsModal(false);
+    setShowSuccessModal(false);
+    setFormData({
+      date: '',
+      time: '',
+      title: '',
+      description: '',
+      photo: null
+    });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setFormData(prev => ({
+      ...prev,
+      photo: file
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Here you would typically send the data to your backend
+    console.log('News data:', formData);
+    
+    // Close the form modal and show success modal
+    setShowAddNewsModal(false);
+    setShowSuccessModal(true);
+    
+    // Auto close success modal after 3 seconds
+    setTimeout(() => {
+      setShowSuccessModal(false);
+    }, 3000);
   };
 
   return (
@@ -214,7 +270,7 @@ const News = () => {
 
           {/* News Actions */}
           <div className="news-actions-section">
-            <button className="add-news-btn">
+            <button className="add-news-btn" onClick={handleAddNews}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -294,6 +350,135 @@ const News = () => {
           </div>
         </main>
       </div>
+
+      {/* Add News Modal */}
+      {showAddNewsModal && (
+        <div className="modal-overlay" onClick={handleCloseModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Add News</h2>
+              <button className="close-btn" onClick={handleCloseModal}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className="modal-form">
+              <div className="form-group">
+                <label htmlFor="date">Date</label>
+                <div className="input-with-icon">
+                  <input
+                    type="text"
+                    id="date"
+                    name="date"
+                    value={formData.date}
+                    onChange={handleInputChange}
+                    placeholder="DD-MM-YYYY"
+                    required
+                  />
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="input-icon">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                </div>
+              </div>
+              <div className="form-group">
+                <label htmlFor="time">Time</label>
+                <input
+                  type="text"
+                  id="time"
+                  name="time"
+                  value={formData.time}
+                  onChange={handleInputChange}
+                  placeholder="HH:MM:SS"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="title">News Title</label>
+                <input
+                  type="text"
+                  id="title"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  placeholder="Enter News Title"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="description">Description</label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="Detailed Description......"
+                  rows="4"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="photo">Upload Photo</label>
+                <div className="file-upload-area">
+                  <input
+                    type="file"
+                    id="photo"
+                    name="photo"
+                    onChange={handleFileChange}
+                    accept="image/*"
+                    className="file-input"
+                  />
+                  <div className="file-upload-content">
+                    <button type="button" className="browse-btn" onClick={() => document.getElementById('photo').click()}>
+                      Browse photo
+                    </button>
+                    <p>Or Drag or Drop Here</p>
+                  </div>
+                </div>
+              </div>
+              <div className="modal-actions">
+                <button type="submit" className="add-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  + Add
+                </button>
+                <button type="button" className="cancel-btn" onClick={handleCloseModal}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="modal-overlay" onClick={handleCloseModal}>
+          <div className="success-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="close-btn" onClick={handleCloseModal}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+            <div className="success-content">
+              <div className="success-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22,4 12,14.01 9,11.01"></polyline>
+                </svg>
+              </div>
+              <h3>News Added Successfully</h3>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

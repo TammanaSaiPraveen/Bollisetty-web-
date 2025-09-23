@@ -8,6 +8,16 @@ const Grievances = () => {
   const [planExpanded, setPlanExpanded] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [searchWidth, setSearchWidth] = useState('60px');
+  const [showAddGrievanceModal, setShowAddGrievanceModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [formData, setFormData] = useState({
+    constituency: '',
+    department: '',
+    address: '',
+    title: '',
+    description: '',
+    photo: null
+  });
   const profileRef = useRef(null);
 
   const toggleSidebar = () => {
@@ -20,6 +30,54 @@ const Grievances = () => {
 
   const toggleProfileDropdown = () => {
     setProfileDropdownOpen(!profileDropdownOpen);
+  };
+
+  const handleAddGrievance = () => {
+    setShowAddGrievanceModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowAddGrievanceModal(false);
+    setShowSuccessModal(false);
+    setFormData({
+      constituency: '',
+      department: '',
+      address: '',
+      title: '',
+      description: '',
+      photo: null
+    });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setFormData(prev => ({
+      ...prev,
+      photo: file
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Here you would typically send the data to your backend
+    console.log('Grievance data:', formData);
+    
+    // Close the form modal and show success modal
+    setShowAddGrievanceModal(false);
+    setShowSuccessModal(true);
+    
+    // Auto close success modal after 3 seconds
+    setTimeout(() => {
+      setShowSuccessModal(false);
+    }, 3000);
   };
 
   // Close dropdown when clicking outside
@@ -250,7 +308,7 @@ const Grievances = () => {
 
           {/* Grievances Actions */}
           <div className="grievances-actions-section">
-            <button className="add-grievances-btn">
+            <button className="add-grievances-btn" onClick={handleAddGrievance}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -400,6 +458,135 @@ const Grievances = () => {
           </div>
         </main>
       </div>
+
+      {/* Create New Grievance Modal */}
+      {showAddGrievanceModal && (
+        <div className="modal-overlay" onClick={handleCloseModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Create New Grievance</h2>
+              <button className="close-btn" onClick={handleCloseModal}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className="modal-form">
+              <div className="form-group">
+                <label htmlFor="constituency">Constituency</label>
+                <input
+                  type="text"
+                  id="constituency"
+                  name="constituency"
+                  value={formData.constituency}
+                  onChange={handleInputChange}
+                  placeholder="Enter Constituency"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="department">Department</label>
+                <input
+                  type="text"
+                  id="department"
+                  name="department"
+                  value={formData.department}
+                  onChange={handleInputChange}
+                  placeholder="Enter Category"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="address">Address</label>
+                <input
+                  type="text"
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  placeholder="Street, City, Pin"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="title">Grievance Title</label>
+                <input
+                  type="text"
+                  id="title"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  placeholder="Title"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="description">Description</label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="Detailed Description......"
+                  rows="4"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="photo">Upload Photo</label>
+                <div className="file-upload-area">
+                  <input
+                    type="file"
+                    id="photo"
+                    name="photo"
+                    onChange={handleFileChange}
+                    accept="image/*"
+                    className="file-input"
+                  />
+                  <div className="file-upload-content">
+                    <button type="button" className="browse-btn" onClick={() => document.getElementById('photo').click()}>
+                      Browse photo
+                    </button>
+                    <p>Or Drag or Drop Here</p>
+                  </div>
+                </div>
+              </div>
+              <div className="modal-actions">
+                <button type="submit" className="submit-btn">
+                  Submit
+                </button>
+                <button type="button" className="cancel-btn" onClick={handleCloseModal}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="modal-overlay" onClick={handleCloseModal}>
+          <div className="success-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="close-btn" onClick={handleCloseModal}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+            <div className="success-content">
+              <div className="success-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22,4 12,14.01 9,11.01"></polyline>
+                </svg>
+              </div>
+              <h3>Grievances Added Successfully</h3>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
