@@ -6,6 +6,7 @@ import fullLogo from '../assets/Images/fulllogo.png';
 
 const Development = () => {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  const [planExpanded, setPlanExpanded] = useState(false);
   const [showAddProjectsModal, setShowAddProjectsModal] = useState(false);
   const [showCompletedProjects, setShowCompletedProjects] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -18,57 +19,13 @@ const Development = () => {
     description: '',
     photo: null
   });
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date());
 
   const toggleSidebar = () => {
     setSidebarExpanded(!sidebarExpanded);
   };
 
-  const handleDatePickerToggle = () => {
-    setShowDatePicker(!showDatePicker);
-  };
-
-  const handleDateSelect = (date) => {
-    const formattedDate = date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
-    setFormData(prev => ({
-      ...prev,
-      launchDate: formattedDate
-    }));
-    setSelectedDate(date);
-    setShowDatePicker(false);
-  };
-
-  const formatDateForDisplay = (date) => {
-    return date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
-  };
-
-  const getDaysInMonth = (date) => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-  };
-
-  const getFirstDayOfMonth = (date) => {
-    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-  };
-
-  const navigateMonth = (direction) => {
-    setSelectedDate(prev => {
-      const newDate = new Date(prev);
-      if (direction === 'prev') {
-        newDate.setMonth(newDate.getMonth() - 1);
-      } else {
-        newDate.setMonth(newDate.getMonth() + 1);
-      }
-      return newDate;
-    });
+  const togglePlanSubmenu = () => {
+    setPlanExpanded(!planExpanded);
   };
 
   const handleAddProjects = () => {
@@ -145,7 +102,7 @@ const Development = () => {
   };
 
   return (
-    <div className={`development-container ${sidebarExpanded ? 'sidebar-expanded' : 'sidebar-collapsed'}`}>
+    <div className="development-container">
       {/* Header/Navbar */}
       <header className="development-header">
         <div className="header-left">
@@ -213,7 +170,7 @@ const Development = () => {
             <span className="sidebar-text">Grievances</span>
           </Link>
 
-          <Link to="/schedule" className="sidebar-item">
+          <div className="sidebar-item plan-item" onClick={togglePlanSubmenu}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
               <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -221,7 +178,44 @@ const Development = () => {
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
             <span className="sidebar-text">Plan</span>
-          </Link>
+            {sidebarExpanded && (
+              <svg 
+                width="16" 
+                height="16" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                className={`plan-arrow ${planExpanded ? 'expanded' : ''}`}
+              >
+                <polyline points="6,9 12,15 18,9"></polyline>
+              </svg>
+            )}
+          </div>
+          
+          {planExpanded && sidebarExpanded && (
+            <div className="plan-submenu">
+              <Link to="/schedule" className="sidebar-item submenu-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span className="sidebar-text">Schedule</span>
+              </Link>
+              <Link to="/news" className="sidebar-item submenu-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14,2 14,8 20,8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10,9 9,9 8,9"></polyline>
+                </svg>
+                <span className="sidebar-text">News</span>
+              </Link>
+            </div>
+          )}
 
           <div className="sidebar-item active">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -452,122 +446,57 @@ const Development = () => {
         </div>
       </main>
 
-      {/* Add Projects Modal - Exact match to provided design */}
+      {/* Add Projects Modal */}
       {showAddProjectsModal && (
         <div className="modal-overlay" onClick={handleCloseModal}>
-          <div className="add-projects-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close-btn" onClick={handleCloseModal}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-            
-            <div className="modal-title">Add Projects</div>
-            
-            <form onSubmit={handleSubmit} className="add-projects-form">
-              <div className="form-row">
-                <div className="form-field">
-                  <label>Launch Date</label>
-                  <div className="date-input-container">
-                    <input
-                      type="text"
-                      name="launchDate"
-                      value={formData.launchDate}
-                      onChange={handleInputChange}
-                      placeholder="DD-MM-YYYY"
-                      required
-                      readOnly
-                    />
-                    <svg 
-                      width="16" 
-                      height="16" 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth="2" 
-                      className="calendar-icon"
-                      onClick={handleDatePickerToggle}
-                    >
-                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                      <line x1="16" y1="2" x2="16" y2="6"></line>
-                      <line x1="8" y1="2" x2="8" y2="6"></line>
-                      <line x1="3" y1="10" x2="21" y2="10"></line>
-                    </svg>
-                    
-                    {showDatePicker && (
-                      <div className="date-picker-dropdown">
-                        <div className="date-picker-header">
-                          <button 
-                            type="button" 
-                            className="nav-button"
-                            onClick={() => navigateMonth('prev')}
-                          >
-                            ‹
-                          </button>
-                          <span className="month-year">
-                            {selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                          </span>
-                          <button 
-                            type="button" 
-                            className="nav-button"
-                            onClick={() => navigateMonth('next')}
-                          >
-                            ›
-                          </button>
-                        </div>
-                        <div className="date-picker-grid">
-                          <div className="day-header">Sun</div>
-                          <div className="day-header">Mon</div>
-                          <div className="day-header">Tue</div>
-                          <div className="day-header">Wed</div>
-                          <div className="day-header">Thu</div>
-                          <div className="day-header">Fri</div>
-                          <div className="day-header">Sat</div>
-                          
-                          {Array.from({ length: getFirstDayOfMonth(selectedDate) }, (_, i) => (
-                            <div key={`empty-${i}`} className="day-cell empty"></div>
-                          ))}
-                          
-                          {Array.from({ length: getDaysInMonth(selectedDate) }, (_, i) => {
-                            const day = i + 1;
-                            const date = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), day);
-                            const isToday = date.toDateString() === new Date().toDateString();
-                            
-                            return (
-                              <button
-                                key={day}
-                                type="button"
-                                className={`day-cell ${isToday ? 'today' : ''}`}
-                                onClick={() => handleDateSelect(date)}
-                              >
-                                {day}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="form-field">
-                  <label>Launch Time</label>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Add Projects</h2>
+              <button className="close-btn" onClick={handleCloseModal}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className="modal-form">
+              <div className="form-group">
+                <label htmlFor="launchDate">Launch Date</label>
+                <div className="input-with-icon">
                   <input
                     type="text"
-                    name="launchTime"
-                    value={formData.launchTime}
+                    id="launchDate"
+                    name="launchDate"
+                    value={formData.launchDate}
                     onChange={handleInputChange}
-                    placeholder="HH:MM:SS"
+                    placeholder="DD-MM-YYYY"
                     required
                   />
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="input-icon">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
                 </div>
               </div>
-              
-              <div className="form-field">
-                <label>Project Title</label>
+              <div className="form-group">
+                <label htmlFor="launchTime">Launch Time</label>
                 <input
                   type="text"
+                  id="launchTime"
+                  name="launchTime"
+                  value={formData.launchTime}
+                  onChange={handleInputChange}
+                  placeholder="HH:MM:SS"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="title">Project Title</label>
+                <input
+                  type="text"
+                  id="title"
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
@@ -575,46 +504,47 @@ const Development = () => {
                   required
                 />
               </div>
-              
-              <div className="form-field">
-                <label>Project Description</label>
+              <div className="form-group">
+                <label htmlFor="description">Project Description</label>
                 <textarea
+                  id="description"
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
-                  placeholder="Detailed Description....."
+                  placeholder="Detailed Description......"
                   rows="4"
                   required
                 />
               </div>
-              
-              <div className="form-field">
-                <label>Upload Photo</label>
-                <div className="photo-upload-area">
+              <div className="form-group">
+                <label htmlFor="photo">Upload Photo</label>
+                <div className="file-upload-area">
                   <input
                     type="file"
+                    id="photo"
                     name="photo"
                     onChange={handleFileChange}
                     accept="image/*"
                     className="file-input"
-                    id="photo-upload"
                   />
-                  <div className="upload-content">
-                    <button type="button" className="browse-photo-btn" onClick={() => document.getElementById('photo-upload').click()}>
+                  <div className="file-upload-content">
+                    <button type="button" className="browse-btn" onClick={() => document.getElementById('photo').click()}>
                       Browse photo
                     </button>
-                    <div className="upload-divider">Or</div>
-                    <div className="drag-drop-text">Drag or Drop Here</div>
+                    <p>Or Drag or Drop Here</p>
                   </div>
                 </div>
               </div>
-              
-              <div className="modal-buttons">
-                <button type="submit" className="add-button">
+              <div className="modal-actions">
+                <button type="submit" className="add-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
                   + Add
                 </button>
-                <button type="button" className="cancel-button" onClick={handleCloseModal}>
-                  Cancle
+                <button type="button" className="cancel-btn" onClick={handleCloseModal}>
+                  Cancel
                 </button>
               </div>
             </form>
