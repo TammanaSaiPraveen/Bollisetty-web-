@@ -18,9 +18,57 @@ const Development = () => {
     description: '',
     photo: null
   });
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   const toggleSidebar = () => {
     setSidebarExpanded(!sidebarExpanded);
+  };
+
+  const handleDatePickerToggle = () => {
+    setShowDatePicker(!showDatePicker);
+  };
+
+  const handleDateSelect = (date) => {
+    const formattedDate = date.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+    setFormData(prev => ({
+      ...prev,
+      launchDate: formattedDate
+    }));
+    setSelectedDate(date);
+    setShowDatePicker(false);
+  };
+
+  const formatDateForDisplay = (date) => {
+    return date.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  const getDaysInMonth = (date) => {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  };
+
+  const getFirstDayOfMonth = (date) => {
+    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+  };
+
+  const navigateMonth = (direction) => {
+    setSelectedDate(prev => {
+      const newDate = new Date(prev);
+      if (direction === 'prev') {
+        newDate.setMonth(newDate.getMonth() - 1);
+      } else {
+        newDate.setMonth(newDate.getMonth() + 1);
+      }
+      return newDate;
+    });
   };
 
   const handleAddProjects = () => {
@@ -404,57 +452,122 @@ const Development = () => {
         </div>
       </main>
 
-      {/* Add Projects Modal */}
+      {/* Add Projects Modal - Exact match to provided design */}
       {showAddProjectsModal && (
         <div className="modal-overlay" onClick={handleCloseModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Add Projects</h2>
-              <button className="close-btn" onClick={handleCloseModal}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </button>
-            </div>
-            <form onSubmit={handleSubmit} className="modal-form">
-              <div className="form-group">
-                <label htmlFor="launchDate">Launch Date</label>
-                <div className="input-with-icon">
+          <div className="add-projects-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close-btn" onClick={handleCloseModal}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+            
+            <div className="modal-title">Add Projects</div>
+            
+            <form onSubmit={handleSubmit} className="add-projects-form">
+              <div className="form-row">
+                <div className="form-field">
+                  <label>Launch Date</label>
+                  <div className="date-input-container">
+                    <input
+                      type="text"
+                      name="launchDate"
+                      value={formData.launchDate}
+                      onChange={handleInputChange}
+                      placeholder="DD-MM-YYYY"
+                      required
+                      readOnly
+                    />
+                    <svg 
+                      width="16" 
+                      height="16" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      className="calendar-icon"
+                      onClick={handleDatePickerToggle}
+                    >
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                      <line x1="16" y1="2" x2="16" y2="6"></line>
+                      <line x1="8" y1="2" x2="8" y2="6"></line>
+                      <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    
+                    {showDatePicker && (
+                      <div className="date-picker-dropdown">
+                        <div className="date-picker-header">
+                          <button 
+                            type="button" 
+                            className="nav-button"
+                            onClick={() => navigateMonth('prev')}
+                          >
+                            ‹
+                          </button>
+                          <span className="month-year">
+                            {selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                          </span>
+                          <button 
+                            type="button" 
+                            className="nav-button"
+                            onClick={() => navigateMonth('next')}
+                          >
+                            ›
+                          </button>
+                        </div>
+                        <div className="date-picker-grid">
+                          <div className="day-header">Sun</div>
+                          <div className="day-header">Mon</div>
+                          <div className="day-header">Tue</div>
+                          <div className="day-header">Wed</div>
+                          <div className="day-header">Thu</div>
+                          <div className="day-header">Fri</div>
+                          <div className="day-header">Sat</div>
+                          
+                          {Array.from({ length: getFirstDayOfMonth(selectedDate) }, (_, i) => (
+                            <div key={`empty-${i}`} className="day-cell empty"></div>
+                          ))}
+                          
+                          {Array.from({ length: getDaysInMonth(selectedDate) }, (_, i) => {
+                            const day = i + 1;
+                            const date = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), day);
+                            const isToday = date.toDateString() === new Date().toDateString();
+                            
+                            return (
+                              <button
+                                key={day}
+                                type="button"
+                                className={`day-cell ${isToday ? 'today' : ''}`}
+                                onClick={() => handleDateSelect(date)}
+                              >
+                                {day}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="form-field">
+                  <label>Launch Time</label>
                   <input
                     type="text"
-                    id="launchDate"
-                    name="launchDate"
-                    value={formData.launchDate}
+                    name="launchTime"
+                    value={formData.launchTime}
                     onChange={handleInputChange}
-                    placeholder="DD-MM-YYYY"
+                    placeholder="HH:MM:SS"
                     required
                   />
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="input-icon">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                  </svg>
                 </div>
               </div>
-              <div className="form-group">
-                <label htmlFor="launchTime">Launch Time</label>
+              
+              <div className="form-field">
+                <label>Project Title</label>
                 <input
                   type="text"
-                  id="launchTime"
-                  name="launchTime"
-                  value={formData.launchTime}
-                  onChange={handleInputChange}
-                  placeholder="HH:MM:SS"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="title">Project Title</label>
-                <input
-                  type="text"
-                  id="title"
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
@@ -462,47 +575,46 @@ const Development = () => {
                   required
                 />
               </div>
-              <div className="form-group">
-                <label htmlFor="description">Project Description</label>
+              
+              <div className="form-field">
+                <label>Project Description</label>
                 <textarea
-                  id="description"
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
-                  placeholder="Detailed Description......"
+                  placeholder="Detailed Description....."
                   rows="4"
                   required
                 />
               </div>
-              <div className="form-group">
-                <label htmlFor="photo">Upload Photo</label>
-                <div className="file-upload-area">
+              
+              <div className="form-field">
+                <label>Upload Photo</label>
+                <div className="photo-upload-area">
                   <input
                     type="file"
-                    id="photo"
                     name="photo"
                     onChange={handleFileChange}
                     accept="image/*"
                     className="file-input"
+                    id="photo-upload"
                   />
-                  <div className="file-upload-content">
-                    <button type="button" className="browse-btn" onClick={() => document.getElementById('photo').click()}>
+                  <div className="upload-content">
+                    <button type="button" className="browse-photo-btn" onClick={() => document.getElementById('photo-upload').click()}>
                       Browse photo
                     </button>
-                    <p>Or Drag or Drop Here</p>
+                    <div className="upload-divider">Or</div>
+                    <div className="drag-drop-text">Drag or Drop Here</div>
                   </div>
                 </div>
               </div>
-              <div className="modal-actions">
-                <button type="submit" className="add-btn">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                  </svg>
+              
+              <div className="modal-buttons">
+                <button type="submit" className="add-button">
                   + Add
                 </button>
-                <button type="button" className="cancel-btn" onClick={handleCloseModal}>
-                  Cancel
+                <button type="button" className="cancel-button" onClick={handleCloseModal}>
+                  Cancle
                 </button>
               </div>
             </form>
