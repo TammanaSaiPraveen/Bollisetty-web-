@@ -205,22 +205,252 @@ const Dashboard = () => {
 
         {/* Dashboard Content */}
         <div className="dashboard-content">
-          <div className="dashboard-grid">
-            <div className="dashboard-card">
-              <h3>Total Users</h3>
-              <p className="dashboard-number">1,234</p>
+          {/* Three-Section Layout */}
+          <div className="three-section-layout">
+            {/* Top Left Section - Summary Cards + Notifications (First Image) */}
+            <div className="top-left-section">
+              {/* Summary Cards */}
+              <div className="summary-cards-row">
+                <div className="summary-card active-voters">
+                  <div className="card-icon green">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
                   </div>
-            <div className="dashboard-card">
-              <h3>Active Projects</h3>
-              <p className="dashboard-number">56</p>
+                  <div className="card-content">
+                    <h3>Active Voters</h3>
+                    <p className="card-number green">30000</p>
                   </div>
-            <div className="dashboard-card">
-              <h3>Grievances</h3>
-              <p className="dashboard-number">89</p>
                 </div>
-            <div className="dashboard-card">
-              <h3>Completed</h3>
-              <p className="dashboard-number">234</p>
+                
+                <div className="summary-card ongoing-process">
+                  <div className="card-icon red">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14,2 14,8 20,8"></polyline>
+                      <line x1="16" y1="13" x2="8" y2="13"></line>
+                      <line x1="16" y1="17" x2="8" y2="17"></line>
+                      <polyline points="10,9 9,9 8,9"></polyline>
+                    </svg>
+                  </div>
+                  <div className="card-content">
+                    <h3>Ongoing Process</h3>
+                    <p className="card-number red">10+</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Notifications Section */}
+              <div className="notifications-section">
+                <div className="notifications-header">
+                  <div className="notifications-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                      <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <h2>Notifications</h2>
+                  </div>
+                  <div className="notifications-divider"></div>
+                </div>
+                
+                <div className="notification-cards">
+                  <div className="notification-card">
+                    <div className="notification-image">
+                      <div className="image-placeholder streetlight"></div>
+                    </div>
+                    <div className="notification-content">
+                      <h4>StreetLight Not Working</h4>
+                      <p>Submitted on 29 Jul 2025</p>
+                    </div>
+                  </div>
+                  
+                  <div className="notification-card">
+                    <div className="notification-image">
+                      <div className="image-placeholder water-supply"></div>
+                    </div>
+                    <div className="notification-content">
+                      <h4>Water Supply Disruption</h4>
+                      <p>Submitted on 02 Aug 2025</p>
+                    </div>
+                  </div>
+                  
+                  <div className="notification-card">
+                    <div className="notification-image">
+                      <div className="image-placeholder potholes"></div>
+                    </div>
+                    <div className="notification-content">
+                      <h4>Potholes on MG Road</h4>
+                      <p>Submitted on 30 Jul 2025</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+             {/* Top Right Section - Calendar + Schedule + News */}
+             <div className="top-right-section">
+               {/* Calendar Widget */}
+               <div className="calendar-widget">
+                 <div className="calendar-header">
+                   <h3>September</h3>
+                 </div>
+                 <div className="calendar-content">
+                   <div className="calendar-week-numbers">
+                     <div>36</div>
+                     <div>37</div>
+                     <div>38</div>
+                     <div>39</div>
+                     <div>40</div>
+                     <div>41</div>
+                   </div>
+                   <div className="calendar-main">
+                     <div className="calendar-weekdays">
+                       <div>Mo</div>
+                       <div>Tu</div>
+                       <div>We</div>
+                       <div>Th</div>
+                       <div>Fr</div>
+                       <div>Sa</div>
+                       <div>Su</div>
+                     </div>
+                     <div className="calendar-dates">
+                       <div className="date-cell prev-month">1</div>
+                       <div className="date-cell prev-month">2</div>
+                       <div className="date-cell prev-month">3</div>
+                       <div className="date-cell prev-month">4</div>
+                       <div className="date-cell prev-month">5</div>
+                       <div className="date-cell">1</div>
+                       <div className="date-cell">2</div>
+                       <div className="date-cell">3</div>
+                       <div className="date-cell">4</div>
+                       <div className="date-cell">5</div>
+                       <div className="date-cell">6</div>
+                       <div className="date-cell">7</div>
+                       <div className="date-cell">8</div>
+                       <div className="date-cell">9</div>
+                       <div className="date-cell">10</div>
+                       <div className="date-cell">11</div>
+                       <div className="date-cell">12</div>
+                       <div className="date-cell selected">13</div>
+                       <div className="date-cell">14</div>
+                       <div className="date-cell">15</div>
+                       <div className="date-cell">16</div>
+                       <div className="date-cell">17</div>
+                       <div className="date-cell">18</div>
+                       <div className="date-cell">19</div>
+                       <div className="date-cell">20</div>
+                       <div className="date-cell">21</div>
+                       <div className="date-cell">22</div>
+                       <div className="date-cell">23</div>
+                       <div className="date-cell">24</div>
+                       <div className="date-cell">25</div>
+                       <div className="date-cell">26</div>
+                       <div className="date-cell">27</div>
+                       <div className="date-cell">28</div>
+                       <div className="date-cell">29</div>
+                       <div className="date-cell">30</div>
+                       <div className="date-cell next-month">1</div>
+                       <div className="date-cell next-month">2</div>
+                       <div className="date-cell next-month">3</div>
+                       <div className="date-cell next-month">4</div>
+                       <div className="date-cell next-month">5</div>
+                       <div className="date-cell next-month">6</div>
+                       <div className="date-cell next-month">7</div>
+                       <div className="date-cell next-month">8</div>
+                       <div className="date-cell next-month">9</div>
+                       <div className="date-cell next-month">10</div>
+                       <div className="date-cell next-month">11</div>
+                       <div className="date-cell next-month">12</div>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+
+               {/* Today's Schedule Section */}
+               <div className="schedule-section">
+                 <div className="section-header">
+                   <h2>Today's Schedule</h2>
+                   <span className="view-more">View More</span>
+                 </div>
+                 
+                 <div className="schedule-cards">
+                   <div className="schedule-card">
+                     <h4>Meet at CM Camp Office</h4>
+                     <p className="location">Velangapudi, Amaravathi, AP</p>
+                     <p className="time">09:00 AM - 12:00PM</p>
+                   </div>
+                   
+                   <div className="schedule-card">
+                     <h4>Farmers</h4>
+                     <p className="time">09:00 AM - 12:00PM</p>
+                   </div>
+                   
+                   <div className="schedule-card">
+                     <h4>Farmers</h4>
+                     <p className="time">09:00 AM - 12:00PM</p>
+                   </div>
+                 </div>
+               </div>
+
+               {/* News Section */}
+               <div className="news-section">
+                 <div className="section-header">
+                   <h2>News</h2>
+                   <span className="view-more">View More</span>
+                 </div>
+                 
+                 <div className="news-card">
+                   <div className="news-image">
+                     <div className="image-placeholder water-supply"></div>
+                   </div>
+                   <div className="news-content">
+                     <h4>Water Supply Disruption</h4>
+                     <p>Submitted on 02 Aug 2025</p>
+                   </div>
+                 </div>
+               </div>
+             </div>
+
+            {/* Bottom Section - Grievances Table (Third Image) */}
+            <div className="bottom-section">
+              <div className="grievances-section">
+                <div className="section-header">
+                  <h2>Grievances</h2>
+                  </div>
+                
+                <div className="grievances-table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Grievance</th>
+                        <th>Area</th>
+                        <th>Department</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>GV101</td>
+                        <td>Water Supply Disruption</td>
+                        <td>Tadepaligudem</td>
+                        <td>Water</td>
+                        <td>Ongoing</td>
+                      </tr>
+                      <tr>
+                        <td>GV101</td>
+                        <td>Water Supply Disruption</td>
+                        <td>Tadepaligudem</td>
+                        <td>Water</td>
+                        <td>Completed</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

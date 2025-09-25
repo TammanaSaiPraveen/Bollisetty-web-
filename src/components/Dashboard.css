@@ -317,41 +317,459 @@
   margin-bottom: 2rem;
 }
 
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+/* Summary Cards Row */
+.summary-cards-row {
+  display: flex;
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
-.dashboard-card {
-  background: rgba(255, 255, 255, 0.9);
+.summary-card {
+  background: white;
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
 }
 
-.dashboard-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+.card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.dashboard-card h3 {
+.card-icon.green {
+  background: #10b981;
+  color: white;
+}
+
+.card-icon.red {
+  background: #ef4444;
+  color: white;
+}
+
+.card-content h3 {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #6b7280;
+  color: #374151;
   margin: 0 0 0.5rem 0;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
-.dashboard-number {
-  font-size: 2.25rem;
+.card-number {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1;
+}
+
+.card-number.green {
+  color: #10b981;
+}
+
+.card-number.red {
+  color: #ef4444;
+}
+
+/* Three-Section Layout */
+.three-section-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 2rem;
+  min-height: 60vh;
+}
+
+/* Top Left Section - Summary Cards + Notifications (First Image) */
+.top-left-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Top Right Section - Calendar + Schedule + News */
+.top-right-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 2rem;
+  height: 100%;
+}
+
+/* Calendar Widget - Top Left of Right Section */
+.calendar-widget {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+/* Schedule Section - Top Right of Right Section */
+.schedule-section {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+/* News Section - Bottom of Right Section (Full Width) */
+.news-section {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
+/* Bottom Section - Grievances Table (Third Image) */
+.bottom-section {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Section Headers */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-title svg {
+  color: #374151;
+}
+
+.section-header h2 {
+  font-size: 1.25rem;
   font-weight: 700;
   color: #1f2937;
   margin: 0;
-  line-height: 1;
+}
+
+.view-more {
+  font-size: 0.875rem;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+/* Notifications Section */
+.notifications-section {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  margin-bottom: 2rem;
+}
+
+.notifications-header {
+  margin-bottom: 1.5rem;
+}
+
+.notifications-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.notifications-title svg {
+  color: #000;
+  width: 20px;
+  height: 20px;
+}
+
+.notifications-title h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #000;
+  margin: 0;
+}
+
+.notifications-divider {
+  height: 1px;
+  background: #e5e7eb;
+  width: 100%;
+}
+
+.notification-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.notification-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid #f3f4f6;
+}
+
+.notification-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+}
+
+.image-placeholder.streetlight {
+  background: linear-gradient(135deg, #1f2937, #374151);
+}
+
+.image-placeholder.water-supply {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.image-placeholder.potholes {
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+}
+
+.notification-content h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #000;
+  margin: 0 0 0.25rem 0;
+}
+
+.notification-content p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Calendar Widget */
+.calendar-widget {
+  background: #1f2937;
+  border-radius: 12px;
+  padding: 1.5rem;
+  color: white;
+  position: relative;
+  height: 280px;
+  overflow: hidden;
+}
+
+.calendar-header h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  text-align: center;
+  color: white;
+}
+
+.calendar-content {
+  display: flex;
+  gap: 1rem;
+  height: calc(100% - 3rem);
+  overflow: hidden;
+}
+
+.calendar-week-numbers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  padding-top: 0.5rem;
+}
+
+.calendar-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.calendar-weekdays div {
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.25rem 0;
+  color: white;
+}
+
+.calendar-dates {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+  flex: 1;
+  overflow: hidden;
+}
+
+.date-cell {
+  text-align: center;
+  padding: 0.25rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  aspect-ratio: 1;
+}
+
+.date-cell:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.date-cell.selected {
+  background: #3b82f6;
+  color: white;
+}
+
+.date-cell.prev-month,
+.date-cell.next-month {
+  color: #6b7280;
+}
+
+.date-cell:not(.prev-month):not(.next-month) {
+  color: white;
+}
+
+/* Schedule Section */
+.schedule-section {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  height: 280px;
+  display: flex;
+  flex-direction: column;
+}
+
+.schedule-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.schedule-card {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #f3f4f6;
+}
+
+.schedule-card h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 0.5rem 0;
+}
+
+.schedule-card .location {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0 0 0.25rem 0;
+}
+
+.schedule-card .time {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* News Section */
+.news-section {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  margin-bottom: 2rem;
+}
+
+.news-card {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid #f3f4f6;
+}
+
+.news-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.news-content h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 0.25rem 0;
+}
+
+.news-content p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Grievances Section */
+.grievances-section {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  margin-bottom: 2rem;
+}
+
+.grievances-table {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.grievances-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.grievances-table th {
+  background: #f9fafb;
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.grievances-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  color: #374151;
+}
+
+.grievances-table tr:last-child td {
+  border-bottom: none;
 }
 
 /* Responsive Design */
@@ -373,7 +791,49 @@
     left: 0;
   }
   
-  .dashboard-grid {
+  .summary-cards-row {
+    flex-direction: column;
+  }
+  
+  .three-section-layout {
     grid-template-columns: 1fr;
+    min-height: auto;
+  }
+  
+  .top-left-section,
+  .top-right-section {
+    gap: 1.5rem;
+  }
+  
+  .top-right-section {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+  
+  .calendar-widget {
+    grid-column: 1;
+    grid-row: 1;
+    height: auto;
+    overflow: visible;
+  }
+  
+  .schedule-section {
+    grid-column: 1;
+    grid-row: 2;
+    height: auto;
+  }
+  
+  .news-section {
+    grid-column: 1;
+    grid-row: 3;
+  }
+  
+  .calendar-content {
+    height: auto;
+    overflow: visible;
+  }
+  
+  .calendar-week-numbers {
+    display: none;
   }
 }
