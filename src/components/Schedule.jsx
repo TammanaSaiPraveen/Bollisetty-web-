@@ -17,6 +17,7 @@ const Schedule = () => {
     reason: '',
     photo: null
   });
+  
   const profileRef = useRef(null);
 
   const toggleSidebar = () => {
@@ -291,7 +292,7 @@ const Schedule = () => {
           {/* Today's Schedule */}
           <div className="schedule-section">
             <h2>Today's Schedule</h2>
-            <div className="schedule-cards">
+            <div className="schedule-cards vertical">
               <div className="schedule-card">
                 <div className="schedule-card-content">
                   <h3>Meet at CM Camp Office</h3>
@@ -299,12 +300,12 @@ const Schedule = () => {
                   <p className="schedule-time">09:00 AM - 12:00PM</p>
                 </div>
               </div>
-              <div className="schedule-card">
+              {/* <div className="schedule-card">
                 <div className="schedule-card-content">
                   <h3>Farmers</h3>
                   <p className="schedule-time">09:00 AM - 12:00PM</p>
                 </div>
-              </div>
+              </div> */}
               <div className="schedule-card">
                 <div className="schedule-card-content">
                   <h3>Farmers</h3>
@@ -317,7 +318,7 @@ const Schedule = () => {
           {/* Yesterday Schedule */}
           <div className="schedule-section">
             <h2>Yesterday Schedule</h2>
-            <div className="schedule-cards">
+            <div className="schedule-cards vertical">
               <div className="schedule-card">
                 <div className="schedule-card-content">
                   <h3>Meet at CM Camp Office</h3>

@@ -4,6 +4,9 @@ import './Dashboard.css';
 import logoImage from '../assets/Images/Authoritative Government Service App Logo (1).png';
 import fullLogo from '../assets/Images/fulllogo.png';
 import apImage from '../assets/Images/AP.png';
+import streetLightImg from '../assets/Images/Street_Light.png';
+import waterSupplyImg from '../assets/Images/Water_Supply1.png';
+import potholesImg from '../assets/Images/potholes.png';
 
 const Dashboard = () => {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
@@ -257,9 +260,9 @@ const Dashboard = () => {
                 </div>
                 
                 <div className="notification-cards">
-                  <div className="notification-card">
+                <div className="notification-card">
                     <div className="notification-image">
-                      <div className="image-placeholder streetlight"></div>
+                      <img src={streetLightImg} alt="Street Light" />
                     </div>
                     <div className="notification-content">
                       <h4>StreetLight Not Working</h4>
@@ -269,7 +272,7 @@ const Dashboard = () => {
                   
                   <div className="notification-card">
                     <div className="notification-image">
-                      <div className="image-placeholder water-supply"></div>
+                      <img src={waterSupplyImg} alt="Water Supply" />
                     </div>
                     <div className="notification-content">
                       <h4>Water Supply Disruption</h4>
@@ -279,7 +282,7 @@ const Dashboard = () => {
                   
                   <div className="notification-card">
                     <div className="notification-image">
-                      <div className="image-placeholder potholes"></div>
+                      <img src={potholesImg} alt="Potholes" />
                     </div>
                     <div className="notification-content">
                       <h4>Potholes on MG Road</h4>
@@ -402,15 +405,15 @@ const Dashboard = () => {
                    <span className="view-more">View More</span>
                  </div>
                  
-                 <div className="news-card">
-                   <div className="news-image">
-                     <div className="image-placeholder water-supply"></div>
-                   </div>
-                   <div className="news-content">
-                     <h4>Water Supply Disruption</h4>
-                     <p>Submitted on 02 Aug 2025</p>
-                   </div>
-                 </div>
+                <div className="news-card">
+                  <div className="news-image">
+                    <img src={waterSupplyImg} alt="Water Supply" />
+                  </div>
+                  <div className="news-content">
+                    <h4>Water Supply Disruption</h4>
+                    <p>Submitted on 02 Aug 2025</p>
+                  </div>
+                </div>
                </div>
              </div>
 

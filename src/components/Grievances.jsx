@@ -311,19 +311,17 @@ const Grievances = () => {
           <div className="content-row">
             {/* Past Search History - Left Side */}
             <div className="search-history-section">
-              <div className="search-history-card">
-                <h3>Past Search History</h3>
-                <div className="search-tags">
-                  <span className="search-tag">Ganeshnagar</span>
-                  <span className="search-tag">Water Problem</span>
-                  <span className="search-tag">Water Problem</span>
-                  <span className="search-tag">Current Problem</span>
-                </div>
+              <h3>Past Search History</h3>
+              <div className="search-tags">
+                <span className="search-tag">Ganeshnagar</span>
+                <span className="search-tag">Water Problem</span>
+                <span className="search-tag">Water Problem</span>
+                <span className="search-tag">Current Problem</span>
               </div>
             </div>
 
             {/* Grievances Status Cards - Right Side */}
-            <div className="status-cards">
+            <div className="status-cards-section">
               <div className="status-card">
                 <h3>Grievances Status</h3>
                 <div className="pie-chart-container">
@@ -375,8 +373,8 @@ const Grievances = () => {
             </div>
           </div>
 
-          {/* Grievances Table */}
-          <div className="grievances-table-section">
+          {/* Grievances Table (Unified Card) */}
+          <div className="grievances-table-container unified">
             <div className="table-header">
               <h2>Grievances</h2>
             </div>

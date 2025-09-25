@@ -290,10 +290,10 @@ const News = () => {
           {/* Trending News Section */}
           <div className="news-section">
             <h2>Trending News</h2>
-            <div className="news-cards">
+            <div className="news-cards vertical">
               <div className="news-card">
                 <div className="news-card-image">
-                  <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 120'%3E%3Crect width='200' height='120' fill='%23e5e7eb'/%3E%3Ccircle cx='50' cy='40' r='15' fill='%233b82f6'/%3E%3Cpath d='M30 60 L70 60 M50 50 L50 70' stroke='%233b82f6' stroke-width='3'/%3E%3Ccircle cx='120' cy='40' r='15' fill='%233b82f6'/%3E%3Cpath d='M100 60 L140 60 M120 50 L120 70' stroke='%233b82f6' stroke-width='3'/%3E%3Ccircle cx='150' cy='40' r='15' fill='%233b82f6'/%3E%3Cpath d='M130 60 L170 60 M150 50 L150 70' stroke='%233b82f6' stroke-width='3'/%3E%3C/svg%3E" alt="Water collection" />
+                  <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 120'%3E%3Crect width='200' height='120' fill='%23e5e7eb'/%3E%3Ccircle cx='100' cy='55' r='18' fill='%233b82f6'/%3E%3Cpath d='M80 85 L120 85 M100 73 L100 97' stroke='%233b82f6' stroke-width='4'/%3E%3C/svg%3E" alt="News icon" />
                 </div>
                 <div className="news-card-content">
                   <h3>Water Supply Disruption</h3>
@@ -319,10 +319,10 @@ const News = () => {
           {/* Dated News Section */}
           <div className="news-section">
             <h2>07/09/2025</h2>
-            <div className="news-cards">
+            <div className="news-cards vertical">
               <div className="news-card">
                 <div className="news-card-image">
-                  <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 120'%3E%3Crect width='200' height='120' fill='%23e5e7eb'/%3E%3Ccircle cx='50' cy='40' r='15' fill='%233b82f6'/%3E%3Cpath d='M30 60 L70 60 M50 50 L50 70' stroke='%233b82f6' stroke-width='3'/%3E%3Ccircle cx='120' cy='40' r='15' fill='%233b82f6'/%3E%3Cpath d='M100 60 L140 60 M120 50 L120 70' stroke='%233b82f6' stroke-width='3'/%3E%3Ccircle cx='150' cy='40' r='15' fill='%233b82f6'/%3E%3Cpath d='M130 60 L170 60 M150 50 L150 70' stroke='%233b82f6' stroke-width='3'/%3E%3C/svg%3E" alt="Water collection" />
+                  <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 120'%3E%3Crect width='200' height='120' fill='%23e5e7eb'/%3E%3Ccircle cx='100' cy='55' r='18' fill='%233b82f6'/%3E%3Cpath d='M80 85 L120 85 M100 73 L100 97' stroke='%233b82f6' stroke-width='4'/%3E%3C/svg%3E" alt="News icon" />
                 </div>
                 <div className="news-card-content">
                   <h3>Water Supply Disruption</h3>
