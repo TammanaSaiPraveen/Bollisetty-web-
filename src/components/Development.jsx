@@ -7,7 +7,10 @@ const Development = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [planExpanded, setPlanExpanded] = useState(false);
   const [showAddProjectsModal, setShowAddProjectsModal] = useState(false);
+  const [showCompletedProjects, setShowCompletedProjects] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedProjectType, setSelectedProjectType] = useState('current');
   const [formData, setFormData] = useState({
     launchDate: '',
     launchTime: '',
@@ -15,7 +18,7 @@ const Development = () => {
     description: '',
     photo: null
   });
-
+  
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
@@ -69,6 +72,32 @@ const Development = () => {
     setTimeout(() => {
       setShowSuccessModal(false);
     }, 3000);
+  };
+
+  const toggleProjectsView = () => {
+    setShowCompletedProjects(prev => !prev);
+  };
+
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
+  };
+
+  const selectProjectType = (type) => {
+    setSelectedProjectType(type);
+    setShowDropdown(false);
+    if (type === 'completed') {
+      setShowCompletedProjects(true);
+    } else {
+      setShowCompletedProjects(false);
+    }
+  };
+
+  const getProjectTypeLabel = () => {
+    switch(selectedProjectType) {
+      case 'completed': return 'Completed Projects';
+      case 'proposed': return 'Proposed Projects';
+      default: return 'Current Projects';
+    }
   };
 
   return (
@@ -252,13 +281,14 @@ const Development = () => {
               <rect x="3" y="14" width="7" height="7"></rect>
             </svg>
           </div>
-          <div className="sidebar-icon logout">
+          <Link to="/development" className="sidebar-icon logout">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <polyline points="16,17 21,12 16,7"></polyline>
-              <line x1="21" y1="12" x2="9" y2="12"></line>
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
             </svg>
-          </div>
+          </Link>
         </aside>
 
         {/* Main Content */}
@@ -297,102 +327,171 @@ const Development = () => {
             </div>
           </div>
 
-          {/* Past Search History */}
-          <div className="search-history-section">
-            <div className="search-history-card">
-              <h3>Past Search History</h3>
-              <div className="search-history-items">
-                <span className="search-history-item">Ganeshnagar</span>
-                <span className="search-history-item">Water Problem</span>
-                <span className="search-history-item">Water Problem</span>
-                <span className="search-history-item">Current Problem</span>
+          {/* Content Row - match Grievances template */}
+          <div className="content-row">
+            {/* Past Search History (Left) */}
+            <div className="search-history-section">
+              <div className="search-history-card">
+                <h3>Past Search History</h3>
+                <div className="search-history-items">
+                  <span className="search-history-item">Ganeshnagar</span>
+                  <span className="search-history-item">Water Problem</span>
+                  <span className="search-history-item">Water Problem</span>
+                  <span className="search-history-item">Current Problem</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Status Cards (Right) */}
+            <div className="status-cards-section">
+              <div className="status-card">
+                <h3>Project Status</h3>
+                <div className="pie-chart-container">
+                  <div className="pie-chart">
+                    <div className="pie-slice completed" style={{'--percentage': '40%'}}></div>
+                    <div className="pie-slice ongoing" style={{'--percentage': '35%'}}></div>
+                    <div className="pie-slice current" style={{'--percentage': '25%'}}></div>
+                  </div>
+                  <div className="pie-legend">
+                    <div className="legend-item">
+                      <div className="legend-color current"></div>
+                      <span>Current 25</span>
+                    </div>
+                    <div className="legend-item">
+                      <div className="legend-color ongoing"></div>
+                      <span>Ongoing 35</span>
+                    </div>
+                    <div className="legend-item">
+                      <div className="legend-color completed"></div>
+                      <span>Completed 40</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="status-card">
+                <h3>Grievances Status</h3>
+                <div className="pie-chart-container">
+                  <div className="pie-chart">
+                    <div className="pie-slice completed" style={{'--percentage': '40%'}}></div>
+                    <div className="pie-slice ongoing" style={{'--percentage': '35%'}}></div>
+                    <div className="pie-slice current" style={{'--percentage': '25%'}}></div>
+                  </div>
+                  <div className="pie-legend">
+                    <div className="legend-item">
+                      <div className="legend-color current"></div>
+                      <span>Current 25</span>
+                    </div>
+                    <div className="legend-item">
+                      <div className="legend-color ongoing"></div>
+                      <span>Ongoing 35</span>
+                    </div>
+                    <div className="legend-item">
+                      <div className="legend-color completed"></div>
+                      <span>Completed 40</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Status Cards */}
-          <div className="status-cards-section">
-            <div className="status-card">
-              <h3>Project Status</h3>
-              <div className="pie-chart-container">
-                <div className="pie-chart">
-                  <div className="pie-slice completed" style={{'--percentage': '40%'}}></div>
-                  <div className="pie-slice ongoing" style={{'--percentage': '35%'}}></div>
-                  <div className="pie-slice current" style={{'--percentage': '25%'}}></div>
-                </div>
-                <div className="pie-legend">
-                  <div className="legend-item">
-                    <div className="legend-color current"></div>
-                    <span>Current 25</span>
-                  </div>
-                  <div className="legend-item">
-                    <div className="legend-color ongoing"></div>
-                    <span>Ongoing 35</span>
-                  </div>
-                  <div className="legend-item">
-                    <div className="legend-color completed"></div>
-                    <span>Completed 40</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="status-card">
-              <h3>Grievances Status</h3>
-              <div className="pie-chart-container">
-                <div className="pie-chart">
-                  <div className="pie-slice completed" style={{'--percentage': '40%'}}></div>
-                  <div className="pie-slice ongoing" style={{'--percentage': '35%'}}></div>
-                  <div className="pie-slice current" style={{'--percentage': '25%'}}></div>
-                </div>
-                <div className="pie-legend">
-                  <div className="legend-item">
-                    <div className="legend-color current"></div>
-                    <span>Current 25</span>
-                  </div>
-                  <div className="legend-item">
-                    <div className="legend-color ongoing"></div>
-                    <span>Ongoing 35</span>
-                  </div>
-                  <div className="legend-item">
-                    <div className="legend-color completed"></div>
-                    <span>Completed 40</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Current Projects */}
+          {/* Current/Completed Projects toggle */}
           <div className="projects-section">
             <div className="projects-header">
-              <h2>Current Projects</h2>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="6,9 12,15 18,9"></polyline>
-              </svg>
+              <div className="project-type-selector">
+                <h2 onClick={toggleDropdown} style={{cursor: 'pointer'}}>
+                  {getProjectTypeLabel()}
+                </h2>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" 
+                     style={{transform: showDropdown ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease'}}
+                     onClick={toggleDropdown}>
+                  <polyline points="6,9 12,15 18,9"></polyline>
+                </svg>
+                {showDropdown && (
+                  <div className="project-dropdown">
+                    <div className="dropdown-item" onClick={() => selectProjectType('current')}>
+                      Current Projects
+                    </div>
+                    <div className="dropdown-separator"></div>
+                    <div className="dropdown-item" onClick={() => selectProjectType('completed')}>
+                      Completed Projects
+                    </div>
+                    <div className="dropdown-separator"></div>
+                    <div className="dropdown-item" onClick={() => selectProjectType('proposed')}>
+                      Proposed Projects
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="project-cards">
-              <div className="project-card">
-                <div className="project-card-image">
-                  <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 120'%3E%3Crect width='200' height='120' fill='%23e5e7eb'/%3E%3Ccircle cx='50' cy='40' r='15' fill='%233b82f6'/%3E%3Cpath d='M30 60 L70 60 M50 50 L50 70' stroke='%233b82f6' stroke-width='3'/%3E%3Ccircle cx='120' cy='40' r='15' fill='%233b82f6'/%3E%3Cpath d='M100 60 L140 60 M120 50 L120 70' stroke='%233b82f6' stroke-width='3'/%3E%3Ccircle cx='150' cy='40' r='15' fill='%233b82f6'/%3E%3Cpath d='M130 60 L170 60 M150 50 L150 70' stroke='%233b82f6' stroke-width='3'/%3E%3C/svg%3E" alt="Water collection" />
-                </div>
-                <div className="project-card-content">
-                  <h3>Water Supply Disruption</h3>
-                  <p className="project-location">Location: Ganeshnagar, Tadepalligudem</p>
-                  <p className="project-time">Time: 09:00 AM</p>
-                </div>
-              </div>
-              <div className="project-card">
-                <div className="project-card-content">
-                  <h3>Farmers</h3>
-                  <p className="project-time">Time: 09:00 AM - 12:00PM</p>
-                </div>
-              </div>
-              <div className="project-card">
-                <div className="project-card-content">
-                  <h3>Farmers</h3>
-                  <p className="project-time">Time: 09:00 AM - 12:00PM</p>
-                </div>
-              </div>
+            <div className="project-group-card">
+              {selectedProjectType === 'completed' ? (
+                <>
+                  <div className="project-item">
+                    <div className="project-card-content">
+                      <h3>Street Lights Upgrade</h3>
+                      <p className="project-location">Location: Ward-12</p>
+                      <p className="project-time">Completed: 02:30 PM</p>
+                    </div>
+                  </div>
+                  <div className="project-item">
+                    <div className="project-card-content">
+                      <h3>Drainage Clean-up</h3>
+                      <p className="project-location">Location: Market Road</p>
+                      <p className="project-time">Completed: 11:10 AM</p>
+                    </div>
+                  </div>
+                </>
+              ) : selectedProjectType === 'proposed' ? (
+                <>
+                  <div className="project-item">
+                    <div className="project-card-content">
+                      <h3>New Community Center</h3>
+                      <p className="project-location">Location: Central Area</p>
+                      <p className="project-time">Proposed: Q2 2024</p>
+                    </div>
+                  </div>
+                  <div className="project-item">
+                    <div className="project-card-content">
+                      <h3>Road Widening Project</h3>
+                      <p className="project-location">Location: Main Highway</p>
+                      <p className="project-time">Proposed: Q3 2024</p>
+                    </div>
+                  </div>
+                  <div className="project-item">
+                    <div className="project-card-content">
+                      <h3>Digital Library Setup</h3>
+                      <p className="project-location">Location: Educational Zone</p>
+                      <p className="project-time">Proposed: Q4 2024</p>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="project-item">
+                    <div className="project-card-image">
+                      <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 120'%3E%3Crect width='200' height='120' fill='%23e5e7eb'/%3E%3Ccircle cx='50' cy='40' r='15' fill='%233b82f6'/%3E%3Cpath d='M30 60 L70 60 M50 50 L50 70' stroke='%233b82f6' stroke-width='3'/%3E%3Ccircle cx='120' cy='40' r='15' fill='%233b82f6'/%3E%3Cpath d='M100 60 L140 60 M120 50 L120 70' stroke='%233b82f6' stroke-width='3'/%3E%3Ccircle cx='150' cy='40' r='15' fill='%233b82f6'/%3E%3Cpath d='M130 60 L170 60 M150 50 L150 70' stroke='%233b82f6' stroke-width='3'/%3E%3C/svg%3E" alt="Water collection" />
+                    </div>
+                    <div className="project-card-content">
+                      <h3>Water Supply Disruption</h3>
+                      <p className="project-location">Location: Ganeshnagar, Tadepalligudem</p>
+                      <p className="project-time">Time: 09:00 AM</p>
+                    </div>
+                  </div>
+                  <div className="project-item">
+                    <div className="project-card-content">
+                      <h3>Farmers</h3>
+                      <p className="project-time">Time: 09:00 AM - 12:00PM</p>
+                    </div>
+                  </div>
+                  <div className="project-item">
+                    <div className="project-card-content">
+                      <h3>Farmers</h3>
+                      <p className="project-time">Time: 09:00 AM - 12:00PM</p>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </main>

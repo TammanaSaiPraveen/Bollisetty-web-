@@ -280,13 +280,14 @@ const Users = () => {
               <rect x="3" y="14" width="7" height="7"></rect>
             </svg>
           </div>
-          <div className="sidebar-icon logout">
+          <Link to="/development" className="sidebar-icon logout">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <polyline points="16,17 21,12 16,7"></polyline>
-              <line x1="21" y1="12" x2="9" y2="12"></line>
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
             </svg>
-          </div>
+          </Link>
         </aside>
 
         {/* Main Content */}
