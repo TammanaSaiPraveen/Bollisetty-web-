@@ -9,6 +9,8 @@ import Reports from './components/Reports'
 import Schedule from './components/Schedule'
 import News from './components/News'
 import Development from './components/Development'
+import Profile from './components/Profile'
+import Settings from './components/Settings'
 import './App.css'
 
 function App() {
@@ -26,6 +28,8 @@ function App() {
         <Route path="/schedule" element={<Schedule />} />
         <Route path="/news" element={<News />} />
         <Route path="/development" element={<Development />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/settings" element={<Settings />} />
       </Routes>
     </Router>
   )

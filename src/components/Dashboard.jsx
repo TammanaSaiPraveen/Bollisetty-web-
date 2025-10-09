@@ -4,6 +4,9 @@ import './Dashboard.css';
 import logoImage from '../assets/Images/Authoritative Government Service App Logo (1).png';
 import fullLogo from '../assets/Images/fulllogo.png';
 import apImage from '../assets/Images/AP.png';
+import streetLightImg from '../assets/Images/Street_Light.png';
+import waterSupplyImg from '../assets/Images/Water_Supply1.png';
+import potholesImg from '../assets/Images/potholes.png';
 
 const Dashboard = () => {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
@@ -63,20 +66,20 @@ const Dashboard = () => {
             
             {showProfileDropdown && (
               <div className="profile-dropdown">
-                <div className="profile-dropdown-item">
+                <Link to="/profile" className="profile-dropdown-item" onClick={() => setShowProfileDropdown(false)}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                   </svg>
                   <span>My Profile</span>
-                </div>
-                <div className="profile-dropdown-item">
+                </Link>
+                <Link to="/settings" className="profile-dropdown-item" onClick={() => setShowProfileDropdown(false)}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="3"></circle>
                     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                   </svg>
                   <span>Settings</span>
-                </div>
+                </Link>
               </div>
             )}
           </div>
@@ -257,9 +260,9 @@ const Dashboard = () => {
                 </div>
                 
                 <div className="notification-cards">
-                  <div className="notification-card">
+                <div className="notification-card">
                     <div className="notification-image">
-                      <div className="image-placeholder streetlight"></div>
+                      <img src={streetLightImg} alt="Street Light" />
                     </div>
                     <div className="notification-content">
                       <h4>StreetLight Not Working</h4>
@@ -269,7 +272,7 @@ const Dashboard = () => {
                   
                   <div className="notification-card">
                     <div className="notification-image">
-                      <div className="image-placeholder water-supply"></div>
+                      <img src={waterSupplyImg} alt="Water Supply" />
                     </div>
                     <div className="notification-content">
                       <h4>Water Supply Disruption</h4>
@@ -279,7 +282,7 @@ const Dashboard = () => {
                   
                   <div className="notification-card">
                     <div className="notification-image">
-                      <div className="image-placeholder potholes"></div>
+                      <img src={potholesImg} alt="Potholes" />
                     </div>
                     <div className="notification-content">
                       <h4>Potholes on MG Road</h4>
@@ -402,15 +405,15 @@ const Dashboard = () => {
                    <span className="view-more">View More</span>
                  </div>
                  
-                 <div className="news-card">
-                   <div className="news-image">
-                     <div className="image-placeholder water-supply"></div>
-                   </div>
-                   <div className="news-content">
-                     <h4>Water Supply Disruption</h4>
-                     <p>Submitted on 02 Aug 2025</p>
-                   </div>
-                 </div>
+                <div className="news-card">
+                  <div className="news-image">
+                    <img src={waterSupplyImg} alt="Water Supply" />
+                  </div>
+                  <div className="news-content">
+                    <h4>Water Supply Disruption</h4>
+                    <p>Submitted on 02 Aug 2025</p>
+                  </div>
+                </div>
                </div>
              </div>
 

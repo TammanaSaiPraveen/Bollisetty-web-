@@ -311,19 +311,17 @@ const Grievances = () => {
           <div className="content-row">
             {/* Past Search History - Left Side */}
             <div className="search-history-section">
-              <div className="search-history-card">
-                <h3>Past Search History</h3>
-                <div className="search-tags">
-                  <span className="search-tag">Ganeshnagar</span>
-                  <span className="search-tag">Water Problem</span>
-                  <span className="search-tag">Water Problem</span>
-                  <span className="search-tag">Current Problem</span>
-                </div>
+              <h3>Past Search History</h3>
+              <div className="search-tags">
+                <span className="search-tag">Ganeshnagar</span>
+                <span className="search-tag">Water Problem</span>
+                <span className="search-tag">Water Problem</span>
+                <span className="search-tag">Current Problem</span>
               </div>
             </div>
 
             {/* Grievances Status Cards - Right Side */}
-            <div className="status-cards">
+            <div className="status-cards-section">
               <div className="status-card">
                 <h3>Grievances Status</h3>
                 <div className="pie-chart-container">
@@ -375,8 +373,8 @@ const Grievances = () => {
             </div>
           </div>
 
-          {/* Grievances Table */}
-          <div className="grievances-table-section">
+          {/* Grievances Table (Unified Card) */}
+          <div className="grievances-table-container unified">
             <div className="table-header">
               <h2>Grievances</h2>
             </div>
@@ -440,29 +438,31 @@ const Grievances = () => {
               </button>
             </div>
             <form onSubmit={handleSubmit} className="modal-form">
-              <div className="form-group">
-                <label htmlFor="constituency">Constituency</label>
-                <input
-                  type="text"
-                  id="constituency"
-                  name="constituency"
-                  value={formData.constituency}
-                  onChange={handleInputChange}
-                  placeholder="Enter Constituency"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="department">Department</label>
-                <input
-                  type="text"
-                  id="department"
-                  name="department"
-                  value={formData.department}
-                  onChange={handleInputChange}
-                  placeholder="Enter Category"
-                  required
-                />
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="constituency">Constituency</label>
+                  <input
+                    type="text"
+                    id="constituency"
+                    name="constituency"
+                    value={formData.constituency}
+                    onChange={handleInputChange}
+                    placeholder="Enter Constituency"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="department">Department</label>
+                  <input
+                    type="text"
+                    id="department"
+                    name="department"
+                    value={formData.department}
+                    onChange={handleInputChange}
+                    placeholder="Enter Category"
+                    required
+                  />
+                </div>
               </div>
               <div className="form-group">
                 <label htmlFor="address">Address</label>
@@ -521,6 +521,10 @@ const Grievances = () => {
               </div>
               <div className="modal-actions">
                 <button type="submit" className="submit-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22,2 15,22 11,13 2,9 22,2"></polygon>
+                  </svg>
                   Submit
                 </button>
                 <button type="button" className="cancel-btn" onClick={handleCloseModal}>
