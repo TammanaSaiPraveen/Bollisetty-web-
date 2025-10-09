@@ -354,37 +354,37 @@ const News = () => {
               </button>
             </div>
             <form onSubmit={handleSubmit} className="modal-form">
-              <div className="form-group">
-                <label htmlFor="date">Date</label>
-                <div className="input-with-icon">
-                  <input
-                    type="text"
-                    id="date"
-                    name="date"
-                    value={formData.date}
-                    onChange={handleInputChange}
-                    placeholder="DD-MM-YYYY"
-                    required
-                  />
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="input-icon">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                  </svg>
-                </div>
-              </div>
-              <div className="form-group">
-                <label htmlFor="time">Time</label>
-                <input
-                  type="text"
-                  id="time"
-                  name="time"
-                  value={formData.time}
-                  onChange={handleInputChange}
-                  placeholder="HH:MM:SS"
-                  required
-                />
+              <div className="date-time-row">
+                 <div className="form-group">
+                   <label htmlFor="date">Date</label>
+                   <div className="input-with-icon">
+                     <input
+                       type="date"
+                       id="date"
+                       name="date"
+                       value={formData.date}
+                       onChange={handleInputChange}
+                       required
+                     />
+                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="input-icon">
+                       <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                       <line x1="16" y1="2" x2="16" y2="6"></line>
+                       <line x1="8" y1="2" x2="8" y2="6"></line>
+                       <line x1="3" y1="10" x2="21" y2="10"></line>
+                     </svg>
+                   </div>
+                 </div>
+                 <div className="form-group">
+                   <label htmlFor="time">Time</label>
+                   <input
+                     type="time"
+                     id="time"
+                     name="time"
+                     value={formData.time}
+                     onChange={handleInputChange}
+                     required
+                   />
+                 </div>
               </div>
               <div className="form-group">
                 <label htmlFor="title">News Title</label>
@@ -412,7 +412,7 @@ const News = () => {
               </div>
               <div className="form-group">
                 <label htmlFor="photo">Upload Photo</label>
-                <div className="file-upload-area">
+                <div className="file-upload-area" onClick={() => document.getElementById('photo').click()}>
                   <input
                     type="file"
                     id="photo"
@@ -422,10 +422,11 @@ const News = () => {
                     className="file-input"
                   />
                   <div className="file-upload-content">
-                    <button type="button" className="browse-btn" onClick={() => document.getElementById('photo').click()}>
+                    <button type="button" className="browse-btn">
                       Browse photo
                     </button>
-                    <p>Or Drag or Drop Here</p>
+                    <p>Or</p>
+                    <p>Drag or Drop Here</p>
                   </div>
                 </div>
               </div>
@@ -438,7 +439,7 @@ const News = () => {
                   + Add
                 </button>
                 <button type="button" className="cancel-btn" onClick={handleCloseModal}>
-                  Cancel
+                  Cancle
                 </button>
               </div>
             </form>
