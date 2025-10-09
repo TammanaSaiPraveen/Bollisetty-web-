@@ -102,8 +102,8 @@ const Calendar = ({ selectedDate, onDateSelect, events = [] }) => {
       );
     }
     
-    // Ensure we have enough rows to display all dates (minimum 6 rows)
-    const totalCellsNeeded = Math.max(42, Math.ceil((firstDay + daysInMonth) / 7) * 7);
+    // Ensure we have enough rows to display all dates (only as many as needed)
+    const totalCellsNeeded = Math.ceil((firstDay + daysInMonth) / 7) * 7;
     const usedCells = firstDay + daysInMonth;
     
     // Add empty cells to complete the grid
