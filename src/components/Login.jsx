@@ -114,12 +114,12 @@ const Login = () => {
               <img src={logoImage} alt="Logo" className="logo-image" />
               <span className="brand-name">మన బొలిశెట్టి</span>
             </div>
+            <h1 className="login-title">Login</h1>
+            <p className="login-subtitle">Welcome!</p>
           </div>
 
           {/* Login Form */}
           <div className="form-section">
-            <h1 className="login-title">Login</h1>
-            <p className="login-subtitle">Welcome!</p>
 
             <form onSubmit={handleSubmit} className="login-form">
               <div className="input-group">

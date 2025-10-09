@@ -438,29 +438,31 @@ const Grievances = () => {
               </button>
             </div>
             <form onSubmit={handleSubmit} className="modal-form">
-              <div className="form-group">
-                <label htmlFor="constituency">Constituency</label>
-                <input
-                  type="text"
-                  id="constituency"
-                  name="constituency"
-                  value={formData.constituency}
-                  onChange={handleInputChange}
-                  placeholder="Enter Constituency"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="department">Department</label>
-                <input
-                  type="text"
-                  id="department"
-                  name="department"
-                  value={formData.department}
-                  onChange={handleInputChange}
-                  placeholder="Enter Category"
-                  required
-                />
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="constituency">Constituency</label>
+                  <input
+                    type="text"
+                    id="constituency"
+                    name="constituency"
+                    value={formData.constituency}
+                    onChange={handleInputChange}
+                    placeholder="Enter Constituency"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="department">Department</label>
+                  <input
+                    type="text"
+                    id="department"
+                    name="department"
+                    value={formData.department}
+                    onChange={handleInputChange}
+                    placeholder="Enter Category"
+                    required
+                  />
+                </div>
               </div>
               <div className="form-group">
                 <label htmlFor="address">Address</label>
@@ -519,6 +521,10 @@ const Grievances = () => {
               </div>
               <div className="modal-actions">
                 <button type="submit" className="submit-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22,2 15,22 11,13 2,9 22,2"></polygon>
+                  </svg>
                   Submit
                 </button>
                 <button type="button" className="cancel-btn" onClick={handleCloseModal}>

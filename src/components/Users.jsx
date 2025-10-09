@@ -86,6 +86,20 @@ const Users = () => {
     setSearchWidth('60px');
   };
 
+  const handleEditUser = (userId) => {
+    console.log('Edit user:', userId);
+    // Add edit functionality here
+    alert(`Edit user: ${userId}`);
+  };
+
+  const handleDeleteUser = (userId) => {
+    console.log('Delete user:', userId);
+    // Add delete functionality here
+    if (window.confirm(`Are you sure you want to delete user: ${userId}?`)) {
+      alert(`User ${userId} deleted successfully!`);
+    }
+  };
+
   return (
     <div className={`users-container ${sidebarExpanded ? 'sidebar-expanded' : 'sidebar-collapsed'}`}>
       {/* Header/Navbar */}
@@ -112,20 +126,20 @@ const Users = () => {
             
             {showProfileDropdown && (
               <div className="profile-dropdown">
-                <div className="profile-dropdown-item">
+                <Link to="/profile" className="profile-dropdown-item" onClick={() => setShowProfileDropdown(false)}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                   </svg>
                   <span>My Profile</span>
-                </div>
-                <div className="profile-dropdown-item">
+                </Link>
+                <Link to="/settings" className="profile-dropdown-item" onClick={() => setShowProfileDropdown(false)}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="3"></circle>
                     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                   </svg>
                   <span>Settings</span>
-                </div>
+                </Link>
               </div>
             )}
           </div>
@@ -316,8 +330,8 @@ const Users = () => {
                   <td>Lineman</td>
                   <td>
                     <div className="action-buttons">
-                      <button className="edit-btn" aria-label="Edit"><FiEdit2 size={16} /></button>
-                      <button className="delete-btn" aria-label="Delete"><FiTrash2 size={16} /></button>
+                      <button className="edit-btn" aria-label="Edit" onClick={() => handleEditUser('GV101')}><FiEdit2 size={18} /></button>
+                      <button className="delete-btn" aria-label="Delete" onClick={() => handleDeleteUser('GV101')}><FiTrash2 size={18} /></button>
                     </div>
                   </td>
                 </tr>
@@ -329,8 +343,8 @@ const Users = () => {
                   <td>Incharge</td>
                   <td>
                     <div className="action-buttons">
-                      <button className="edit-btn" aria-label="Edit"><FiEdit2 size={16} /></button>
-                      <button className="delete-btn" aria-label="Delete"><FiTrash2 size={16} /></button>
+                      <button className="edit-btn" aria-label="Edit" onClick={() => handleEditUser('user2101')}><FiEdit2 size={18} /></button>
+                      <button className="delete-btn" aria-label="Delete" onClick={() => handleDeleteUser('user2101')}><FiTrash2 size={18} /></button>
                     </div>
                   </td>
                 </tr>
@@ -342,8 +356,8 @@ const Users = () => {
                   <td>Safety Checker</td>
                   <td>
                     <div className="action-buttons">
-                      <button className="edit-btn" aria-label="Edit"><FiEdit2 size={16} /></button>
-                      <button className="delete-btn" aria-label="Delete"><FiTrash2 size={16} /></button>
+                      <button className="edit-btn" aria-label="Edit" onClick={() => handleEditUser('user3101')}><FiEdit2 size={18} /></button>
+                      <button className="delete-btn" aria-label="Delete" onClick={() => handleDeleteUser('user3101')}><FiTrash2 size={18} /></button>
                     </div>
                   </td>
                 </tr>
@@ -367,6 +381,7 @@ const Users = () => {
               </button>
             </div>
             <form onSubmit={handleSubmit} className="modal-form">
+              <div className="form-row">
               <div className="form-group">
                 <label htmlFor="name">Name</label>
                 <input
@@ -375,9 +390,22 @@ const Users = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  placeholder="Enter full name"
+                    placeholder="Enter Full Name"
                   required
                 />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="role">Role</label>
+                  <input
+                    type="text"
+                    id="role"
+                    name="role"
+                    value={formData.role}
+                    onChange={handleInputChange}
+                    placeholder="Enter Role"
+                    required
+                  />
+                </div>
               </div>
               <div className="form-group">
                 <label htmlFor="email">Email</label>
@@ -387,48 +415,30 @@ const Users = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  placeholder="Enter email address"
+                  placeholder="Enter Email"
                   required
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="role">Role</label>
-                <select
-                  id="role"
-                  name="role"
-                  value={formData.role}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="">Select Role</option>
-                  <option value="admin">Admin</option>
-                  <option value="manager">Manager</option>
-                  <option value="employee">Employee</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label htmlFor="department">Department</label>
-                <select
-                  id="department"
-                  name="department"
-                  value={formData.department}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="">Select Department</option>
-                  <option value="electricity">Electricity</option>
-                  <option value="water">Water</option>
-                  <option value="road">Road</option>
-                </select>
-              </div>
-              <div className="form-group">
                 <label htmlFor="address">Address</label>
-                <textarea
+                <input
+                  type="text"
                   id="address"
                   name="address"
                   value={formData.address}
                   onChange={handleInputChange}
-                  placeholder="Enter address"
+                  placeholder="Street, city"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="department">Department</label>
+                <textarea
+                  id="department"
+                  name="department"
+                  value={formData.department}
+                  onChange={handleInputChange}
+                  placeholder="Detailed Description....."
                   rows="3"
                   required
                 />
