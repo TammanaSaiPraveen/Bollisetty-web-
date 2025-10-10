@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import './Development.css';
 import logoImage from '../assets/Images/Authoritative Government Service App Logo (1).png';
@@ -12,6 +12,8 @@ const Development = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedProjectType, setSelectedProjectType] = useState('current');
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState('');
   const [formData, setFormData] = useState({
     launchDate: '',
     launchTime: '',
@@ -19,6 +21,21 @@ const Development = () => {
     description: '',
     photo: null
   });
+  
+  // Sample development projects data
+  const [projects, setProjects] = useState([
+    { id: 'D001', title: 'Smart City Infrastructure', location: 'Hyderabad', status: 'In Progress', launchDate: '2025-12-15', type: 'current' },
+    { id: 'D002', title: 'Digital Governance Platform', location: 'Amaravathi', status: 'Planning', launchDate: '2025-11-20', type: 'current' },
+    { id: 'D003', title: 'Rural Connectivity Project', location: 'Vijayawada', status: 'Completed', launchDate: '2025-10-05', type: 'completed' },
+    { id: 'D004', title: 'Healthcare Digitalization', location: 'Visakhapatnam', status: 'In Progress', launchDate: '2025-12-30', type: 'current' },
+    { id: 'D005', title: 'Education Technology Initiative', location: 'Tirupati', status: 'Planning', launchDate: '2025-11-10', type: 'current' },
+    { id: 'D006', title: 'Green Energy Project', location: 'Rajahmundry', status: 'Completed', launchDate: '2025-09-15', type: 'completed' }
+  ]);
+
+  const [filteredProjects, setFilteredProjects] = useState(projects);
+  
+  const profileRef = useRef(null);
+  const filterRef = useRef(null);
 
   const toggleSidebar = () => {
     setSidebarExpanded(!sidebarExpanded);
@@ -26,6 +43,39 @@ const Development = () => {
 
   const togglePlanSubmenu = () => {
     setPlanExpanded(!planExpanded);
+  };
+
+  const toggleFilterDropdown = () => {
+    console.log('Filter dropdown toggled:', !showFilterDropdown);
+    setShowFilterDropdown(!showFilterDropdown);
+  };
+
+  const handleFilterSelect = (filter) => {
+    console.log('Filter selected:', filter);
+    setSelectedFilter(filter);
+    setShowFilterDropdown(false);
+    
+    // Apply filter logic
+    if (filter === 'Status') {
+      // Sort by status
+      const sortedByStatus = [...projects].sort((a, b) => a.status.localeCompare(b.status));
+      setFilteredProjects(sortedByStatus);
+      console.log('Filtered by Status:', sortedByStatus);
+    } else if (filter === 'Location') {
+      // Sort by location
+      const sortedByLocation = [...projects].sort((a, b) => a.location.localeCompare(b.location));
+      setFilteredProjects(sortedByLocation);
+      console.log('Filtered by Location:', sortedByLocation);
+    } else if (filter === 'Launch Date') {
+      // Sort by launch date
+      const sortedByDate = [...projects].sort((a, b) => new Date(a.launchDate) - new Date(b.launchDate));
+      setFilteredProjects(sortedByDate);
+      console.log('Filtered by Launch Date:', sortedByDate);
+    } else {
+      // Show all projects
+      setFilteredProjects(projects);
+      console.log('No filter applied, showing all:', projects);
+    }
   };
 
   const handleAddProjects = () => {
@@ -74,6 +124,20 @@ const Development = () => {
       setShowSuccessModal(false);
     }, 3000);
   };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (filterRef.current && !filterRef.current.contains(event.target)) {
+        setShowFilterDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const toggleProjectsView = () => {
     setShowCompletedProjects(prev => !prev);
@@ -269,11 +333,39 @@ const Development = () => {
               </svg>
               <input type="text" placeholder="Search" style={{width: '60px', minWidth: '60px', maxWidth: '60px'}} />
             </div>
-            <button className="filter-btn">
+            {selectedFilter && (
+              <div className="active-filter-indicator">
+                <span>Filtered by: {selectedFilter}</span>
+                <button onClick={() => handleFilterSelect('')} style={{marginLeft: '8px', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer'}}>×</button>
+              </div>
+            )}
+            <div className="filter-icon" onClick={toggleFilterDropdown} ref={filterRef} style={{ cursor: 'pointer' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"></polygon>
               </svg>
-            </button>
+              {showFilterDropdown && <span style={{color: 'red', fontSize: '10px'}}>▼</span>}
+              
+              {showFilterDropdown && (
+                <div className="filter-dropdown">
+                  <div className="filter-option" onClick={() => handleFilterSelect('Status')}>
+                    <span className="radio-icon">{selectedFilter === 'Status' ? '●' : 'O'}</span>
+                    <span>Status</span>
+                  </div>
+                  <div className="filter-option" onClick={() => handleFilterSelect('Location')}>
+                    <span className="radio-icon">{selectedFilter === 'Location' ? '●' : 'O'}</span>
+                    <span>Location</span>
+                  </div>
+                  <div className="filter-option" onClick={() => handleFilterSelect('Launch Date')}>
+                    <span className="radio-icon">{selectedFilter === 'Launch Date' ? '●' : 'O'}</span>
+                    <span>Launch Date</span>
+                  </div>
+                  <div className="filter-option" onClick={() => handleFilterSelect('')}>
+                    <span className="radio-icon">O</span>
+                    <span>Clear Filter</span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -374,72 +466,48 @@ const Development = () => {
               )}
             </div>
           </div>
-          <div className="project-group-card">
+          <div className="project-group-card" style={{ marginTop: showFilterDropdown ? '120px' : '0' }}>
             {selectedProjectType === 'completed' ? (
               <>
-                <div className="project-item">
-                  <div className="project-card-content">
-                    <h3>Street Lights Upgrade</h3>
-                    <p className="project-location">Location: Ward-12</p>
-                    <p className="project-time">Completed: 02:30 PM</p>
+                {filteredProjects.filter(project => project.type === 'completed').map(project => (
+                  <div className="project-item" key={project.id}>
+                    <div className="project-card-content">
+                      <h3>{project.title}</h3>
+                      <p className="project-location">Location: {project.location}</p>
+                      <p className="project-time">Status: {project.status}</p>
+                      <p className="project-time">Launch Date: {project.launchDate}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="project-item">
-                  <div className="project-card-content">
-                    <h3>Drainage Clean-up</h3>
-                    <p className="project-location">Location: Market Road</p>
-                    <p className="project-time">Completed: 11:10 AM</p>
-                  </div>
-                </div>
+                ))}
               </>
             ) : selectedProjectType === 'proposed' ? (
               <>
-                <div className="project-item">
-                  <div className="project-card-content">
-                    <h3>New Community Center</h3>
-                    <p className="project-location">Location: Central Area</p>
-                    <p className="project-time">Proposed: Q2 2024</p>
+                {filteredProjects.filter(project => project.type === 'proposed').map(project => (
+                  <div className="project-item" key={project.id}>
+                    <div className="project-card-content">
+                      <h3>{project.title}</h3>
+                      <p className="project-location">Location: {project.location}</p>
+                      <p className="project-time">Status: {project.status}</p>
+                      <p className="project-time">Launch Date: {project.launchDate}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="project-item">
-                  <div className="project-card-content">
-                    <h3>Road Widening Project</h3>
-                    <p className="project-location">Location: Main Highway</p>
-                    <p className="project-time">Proposed: Q3 2024</p>
-                  </div>
-                </div>
-                <div className="project-item">
-                  <div className="project-card-content">
-                    <h3>Digital Library Setup</h3>
-                    <p className="project-location">Location: Educational Zone</p>
-                    <p className="project-time">Proposed: Q4 2024</p>
-                  </div>
-                </div>
+                ))}
               </>
             ) : (
               <>
-                <div className="project-item">
-                  <div className="project-card-image">
-                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 120'%3E%3Crect width='200' height='120' fill='%23e5e7eb'/%3E%3Ccircle cx='50' cy='40' r='15' fill='%233b82f6'/%3E%3Cpath d='M30 60 L70 60 M50 50 L50 70' stroke='%233b82f6' stroke-width='3'/%3E%3Ccircle cx='120' cy='40' r='15' fill='%233b82f6'/%3E%3Cpath d='M100 60 L140 60 M120 50 L120 70' stroke='%233b82f6' stroke-width='3'/%3E%3Ccircle cx='150' cy='40' r='15' fill='%233b82f6'/%3E%3Cpath d='M130 60 L170 60 M150 50 L150 70' stroke='%233b82f6' stroke-width='3'/%3E%3C/svg%3E" alt="Water collection" />
+                {filteredProjects.filter(project => project.type === 'current').map(project => (
+                  <div className="project-item" key={project.id}>
+                    <div className="project-card-image">
+                      <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 120'%3E%3Crect width='200' height='120' fill='%23e5e7eb'/%3E%3Ccircle cx='50' cy='40' r='15' fill='%233b82f6'/%3E%3Cpath d='M30 60 L70 60 M50 50 L50 70' stroke='%233b82f6' stroke-width='3'/%3E%3Ccircle cx='120' cy='40' r='15' fill='%233b82f6'/%3E%3Cpath d='M100 60 L140 60 M120 50 L120 70' stroke='%233b82f6' stroke-width='3'/%3E%3Ccircle cx='150' cy='40' r='15' fill='%233b82f6'/%3E%3Cpath d='M130 60 L170 60 M150 50 L150 70' stroke='%233b82f6' stroke-width='3'/%3E%3C/svg%3E" alt="Project icon" />
+                    </div>
+                    <div className="project-card-content">
+                      <h3>{project.title}</h3>
+                      <p className="project-location">Location: {project.location}</p>
+                      <p className="project-time">Status: {project.status}</p>
+                      <p className="project-time">Launch Date: {project.launchDate}</p>
+                    </div>
                   </div>
-                  <div className="project-card-content">
-                    <h3>Water Supply Disruption</h3>
-                    <p className="project-location">Location: Ganeshnagar, Tadepalligudem</p>
-                    <p className="project-time">Time: 09:00 AM</p>
-                  </div>
-                </div>
-                <div className="project-item">
-                  <div className="project-card-content">
-                    <h3>Farmers</h3>
-                    <p className="project-time">Time: 09:00 AM - 12:00PM</p>
-                  </div>
-                </div>
-                <div className="project-item">
-                  <div className="project-card-content">
-                    <h3>Farmers</h3>
-                    <p className="project-time">Time: 09:00 AM - 12:00PM</p>
-                  </div>
-                </div>
+                ))}
               </>
             )}
           </div>

@@ -10,6 +10,8 @@ const Schedule = () => {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showAddScheduleModal, setShowAddScheduleModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState('');
   const [formData, setFormData] = useState({
     date: '',
     time: '',
@@ -18,7 +20,20 @@ const Schedule = () => {
     photo: null
   });
   
+  // Sample schedule data
+  const [schedules, setSchedules] = useState([
+    { id: 'S001', title: 'Meet at CM Camp Office', location: 'Velangapudi, Amaravathi, AP', time: '09:00 AM - 12:00 PM', date: '2025-10-10', type: 'Today' },
+    { id: 'S002', title: 'Farmers Meeting', location: 'Rural Area', time: '09:00 AM - 12:00 PM', date: '2025-10-10', type: 'Today' },
+    { id: 'S003', title: 'Farmers Discussion', location: 'Urban Area', time: '09:00 AM - 12:00 PM', date: '2025-10-10', type: 'Today' },
+    { id: 'S004', title: 'Meet at CM Camp Office', location: 'Velangapudi, Amaravathi, AP', time: '09:00 AM - 12:00 PM', date: '2025-10-09', type: 'Yesterday' },
+    { id: 'S005', title: 'Public Hearing', location: 'City Hall', time: '02:00 PM - 04:00 PM', date: '2025-10-09', type: 'Yesterday' },
+    { id: 'S006', title: 'Budget Review', location: 'Government Office', time: '10:00 AM - 11:00 AM', date: '2025-10-09', type: 'Yesterday' }
+  ]);
+
+  const [filteredSchedules, setFilteredSchedules] = useState(schedules);
+  
   const profileRef = useRef(null);
+  const filterRef = useRef(null);
 
   const toggleSidebar = () => {
     setSidebarExpanded(!sidebarExpanded);
@@ -30,6 +45,39 @@ const Schedule = () => {
 
   const toggleProfileDropdown = () => {
     setShowProfileDropdown(!showProfileDropdown);
+  };
+
+  const toggleFilterDropdown = () => {
+    console.log('Filter dropdown toggled:', !showFilterDropdown);
+    setShowFilterDropdown(!showFilterDropdown);
+  };
+
+  const handleFilterSelect = (filter) => {
+    console.log('Filter selected:', filter);
+    setSelectedFilter(filter);
+    setShowFilterDropdown(false);
+    
+    // Apply filter logic
+    if (filter === 'Date') {
+      // Sort by date
+      const sortedByDate = [...schedules].sort((a, b) => new Date(b.date) - new Date(a.date));
+      setFilteredSchedules(sortedByDate);
+      console.log('Filtered by Date:', sortedByDate);
+    } else if (filter === 'Time') {
+      // Sort by time
+      const sortedByTime = [...schedules].sort((a, b) => a.time.localeCompare(b.time));
+      setFilteredSchedules(sortedByTime);
+      console.log('Filtered by Time:', sortedByTime);
+    } else if (filter === 'Location') {
+      // Sort by location
+      const sortedByLocation = [...schedules].sort((a, b) => a.location.localeCompare(b.location));
+      setFilteredSchedules(sortedByLocation);
+      console.log('Filtered by Location:', sortedByLocation);
+    } else {
+      // Show all schedules
+      setFilteredSchedules(schedules);
+      console.log('No filter applied, showing all:', schedules);
+    }
   };
 
   const handleAddSchedule = () => {
@@ -84,6 +132,9 @@ const Schedule = () => {
     const handleClickOutside = (event) => {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
         setShowProfileDropdown(false);
+      }
+      if (filterRef.current && !filterRef.current.contains(event.target)) {
+        setShowFilterDropdown(false);
       }
     };
 
@@ -281,25 +332,55 @@ const Schedule = () => {
                 </svg>
                 <input type="text" placeholder="Search" style={{width: '60px', minWidth: '60px', maxWidth: '60px'}} />
               </div>
-              <button className="filter-btn">
+              {selectedFilter && (
+                <div className="active-filter-indicator">
+                  <span>Filtered by: {selectedFilter}</span>
+                  <button onClick={() => handleFilterSelect('')} style={{marginLeft: '8px', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer'}}>×</button>
+                </div>
+              )}
+              <div className="filter-icon" onClick={toggleFilterDropdown} ref={filterRef} style={{ cursor: 'pointer' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"></polygon>
                 </svg>
-              </button>
+                {showFilterDropdown && <span style={{color: 'red', fontSize: '10px'}}>▼</span>}
+                
+                {showFilterDropdown && (
+                  <div className="filter-dropdown">
+                    <div className="filter-option" onClick={() => handleFilterSelect('Date')}>
+                      <span className="radio-icon">{selectedFilter === 'Date' ? '●' : 'O'}</span>
+                      <span>Date</span>
+                    </div>
+                    <div className="filter-option" onClick={() => handleFilterSelect('Time')}>
+                      <span className="radio-icon">{selectedFilter === 'Time' ? '●' : 'O'}</span>
+                      <span>Time</span>
+                    </div>
+                    <div className="filter-option" onClick={() => handleFilterSelect('Location')}>
+                      <span className="radio-icon">{selectedFilter === 'Location' ? '●' : 'O'}</span>
+                      <span>Location</span>
+                    </div>
+                    <div className="filter-option" onClick={() => handleFilterSelect('')}>
+                      <span className="radio-icon">O</span>
+                      <span>Clear Filter</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Today's Schedule */}
-          <div className="schedule-section">
+          <div className="schedule-section" style={{ marginTop: showFilterDropdown ? '120px' : '0' }}>
             <h2>Today's Schedule</h2>
             <div className="schedule-cards vertical">
-              <div className="schedule-card">
-                <div className="schedule-card-content">
-                  <h3>Meet at CM Camp Office</h3>
-                  <p className="schedule-location">Velangapudi, Amaravathi, AP</p>
-                  <p className="schedule-time">09:00 AM - 12:00PM</p>
+              {filteredSchedules.filter(schedule => schedule.type === 'Today').map(schedule => (
+                <div className="schedule-card" key={schedule.id}>
+                  <div className="schedule-card-content">
+                    <h3>{schedule.title}</h3>
+                    <p className="schedule-location">{schedule.location}</p>
+                    <p className="schedule-time">{schedule.time}</p>
+                  </div>
                 </div>
-              </div>
+              ))}
               {/* <div className="schedule-card">
                 <div className="schedule-card-content">
                   <h3>Farmers</h3>
@@ -319,19 +400,15 @@ const Schedule = () => {
           <div className="schedule-section">
             <h2>Yesterday Schedule</h2>
             <div className="schedule-cards vertical">
-              <div className="schedule-card">
-                <div className="schedule-card-content">
-                  <h3>Meet at CM Camp Office</h3>
-                  <p className="schedule-location">Velangapudi, Amaravathi, AP</p>
-                  <p className="schedule-time">09:00 AM - 12:00PM</p>
+              {filteredSchedules.filter(schedule => schedule.type === 'Yesterday').map(schedule => (
+                <div className="schedule-card" key={schedule.id}>
+                  <div className="schedule-card-content">
+                    <h3>{schedule.title}</h3>
+                    <p className="schedule-location">{schedule.location}</p>
+                    <p className="schedule-time">{schedule.time}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="schedule-card">
-                <div className="schedule-card-content">
-                  <h3>Farmers</h3>
-                  <p className="schedule-time">09:00 AM - 12:00PM</p>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </main>

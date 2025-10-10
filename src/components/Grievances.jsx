@@ -11,6 +11,8 @@ const Grievances = () => {
   const [searchWidth, setSearchWidth] = useState('60px');
   const [showAddGrievanceModal, setShowAddGrievanceModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState('');
   const [formData, setFormData] = useState({
     constituency: '',
     department: '',
@@ -20,7 +22,20 @@ const Grievances = () => {
     photo: null
   });
   
+  // Sample grievances data
+  const [grievances, setGrievances] = useState([
+    { id: 'GV101', grievance: 'Water Supply Disruption', area: 'Tadepaligudem', department: 'Water', status: 'Ongoing' },
+    { id: 'GV102', grievance: 'Road Repair Needed', area: 'Ganeshnagar', department: 'Road', status: 'Completed' },
+    { id: 'GV103', grievance: 'Electricity Outage', area: 'Rajahmundry', department: 'Electricity', status: 'Current' },
+    { id: 'GV104', grievance: 'Street Light Issue', area: 'Vijayawada', department: 'Electricity', status: 'Ongoing' },
+    { id: 'GV105', grievance: 'Drainage Problem', area: 'Visakhapatnam', department: 'Water', status: 'Current' },
+    { id: 'GV106', grievance: 'Bridge Construction', area: 'Tirupati', department: 'Road', status: 'Completed' }
+  ]);
+
+  const [filteredGrievances, setFilteredGrievances] = useState(grievances);
+  
   const profileRef = useRef(null);
+  const filterRef = useRef(null);
 
   const toggleSidebar = () => {
     setSidebarExpanded(!sidebarExpanded);
@@ -32,6 +47,44 @@ const Grievances = () => {
 
   const toggleProfileDropdown = () => {
     setShowProfileDropdown(!showProfileDropdown);
+  };
+
+  const toggleFilterDropdown = () => {
+    console.log('Filter dropdown toggled:', !showFilterDropdown);
+    setShowFilterDropdown(!showFilterDropdown);
+  };
+
+  const handleFilterSelect = (filter) => {
+    console.log('Filter selected:', filter);
+    setSelectedFilter(filter);
+    setShowFilterDropdown(false);
+    
+    // Apply filter logic
+    if (filter === 'Role') {
+      // For grievances, we'll sort by status (similar to role)
+      const sortedByStatus = [...grievances].sort((a, b) => a.status.localeCompare(b.status));
+      setFilteredGrievances(sortedByStatus);
+      console.log('Filtered by Status:', sortedByStatus);
+    } else if (filter === 'Department') {
+      // Sort by department alphabetically
+      const sortedByDept = [...grievances].sort((a, b) => a.department.localeCompare(b.department));
+      setFilteredGrievances(sortedByDept);
+      console.log('Filtered by Department:', sortedByDept);
+    } else if (filter === 'Location') {
+      // Sort by area (location)
+      const sortedByArea = [...grievances].sort((a, b) => a.area.localeCompare(b.area));
+      setFilteredGrievances(sortedByArea);
+      console.log('Filtered by Area:', sortedByArea);
+    } else if (filter === 'Status') {
+      // Sort by status
+      const sortedByStatus = [...grievances].sort((a, b) => a.status.localeCompare(b.status));
+      setFilteredGrievances(sortedByStatus);
+      console.log('Filtered by Status:', sortedByStatus);
+    } else {
+      // Show all grievances
+      setFilteredGrievances(grievances);
+      console.log('No filter applied, showing all:', grievances);
+    }
   };
 
   const handleAddGrievance = () => {
@@ -87,6 +140,9 @@ const Grievances = () => {
     const handleClickOutside = (event) => {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
         setShowProfileDropdown(false);
+      }
+      if (filterRef.current && !filterRef.current.contains(event.target)) {
+        setShowFilterDropdown(false);
       }
     };
 
@@ -299,11 +355,43 @@ const Grievances = () => {
                   maxWidth: searchWidth
                 }} />
               </div>
-              <button className="filter-btn">
+              {selectedFilter && (
+                <div className="active-filter-indicator">
+                  <span>Filtered by: {selectedFilter}</span>
+                  <button onClick={() => handleFilterSelect('')} style={{marginLeft: '8px', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer'}}>×</button>
+                </div>
+              )}
+              <div className="filter-icon" onClick={toggleFilterDropdown} ref={filterRef} style={{ cursor: 'pointer' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"></polygon>
                 </svg>
-              </button>
+                {showFilterDropdown && <span style={{color: 'red', fontSize: '10px'}}>▼</span>}
+                
+                {showFilterDropdown && (
+                  <div className="filter-dropdown">
+                    <div className="filter-option" onClick={() => handleFilterSelect('Role')}>
+                      <span className="radio-icon">{selectedFilter === 'Role' ? '●' : 'O'}</span>
+                      <span>Role</span>
+                    </div>
+                    <div className="filter-option" onClick={() => handleFilterSelect('Location')}>
+                      <span className="radio-icon">{selectedFilter === 'Location' ? '●' : 'O'}</span>
+                      <span>Location</span>
+                    </div>
+                    <div className="filter-option" onClick={() => handleFilterSelect('Status')}>
+                      <span className="radio-icon">{selectedFilter === 'Status' ? '●' : 'O'}</span>
+                      <span>Status</span>
+                    </div>
+                    <div className="filter-option" onClick={() => handleFilterSelect('Department')}>
+                      <span className="radio-icon">{selectedFilter === 'Department' ? '●' : 'O'}</span>
+                      <span>Department</span>
+                    </div>
+                    <div className="filter-option" onClick={() => handleFilterSelect('')}>
+                      <span className="radio-icon">O</span>
+                      <span>Clear Filter</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -374,7 +462,7 @@ const Grievances = () => {
           </div>
 
           {/* Grievances Table (Unified Card) */}
-          <div className="grievances-table-container unified">
+          <div className="grievances-table-container unified" style={{ marginTop: showFilterDropdown ? '120px' : '0' }}>
             <div className="table-header">
               <h2>Grievances</h2>
             </div>
@@ -390,34 +478,19 @@ const Grievances = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>GV101</td>
-                    <td>Water Supply Disruption</td>
-                    <td>Tadepaligudem</td>
-                    <td>Water</td>
-                    <td><span className="status ongoing">Ongoining</span></td>
-                  </tr>
-                  <tr>
-                    <td>GV101</td>
-                    <td>Water Supply Disruption</td>
-                    <td>Tadepaligudem</td>
-                    <td>Water</td>
-                    <td><span className="status not-started">Not Stated Yet</span></td>
-                  </tr>
-                  <tr>
-                    <td>GV101</td>
-                    <td>Water Supply Disruption</td>
-                    <td>Tadepaligudem</td>
-                    <td>Water</td>
-                    <td><span className="status completed">Completed</span></td>
-                  </tr>
-                  <tr>
-                    <td>GV101</td>
-                    <td>Water Supply Disruption</td>
-                    <td>Tadepaligudem</td>
-                    <td>Water</td>
-                    <td><span className="status completed">Completed</span></td>
-                  </tr>
+                  {filteredGrievances.map((grievance) => (
+                    <tr key={grievance.id}>
+                      <td>{grievance.id}</td>
+                      <td>{grievance.grievance}</td>
+                      <td>{grievance.area}</td>
+                      <td>{grievance.department}</td>
+                      <td>
+                        <span className={`status ${grievance.status.toLowerCase()}`}>
+                          {grievance.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>

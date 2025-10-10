@@ -12,6 +12,8 @@ const Users = () => {
   const [searchWidth, setSearchWidth] = useState('60px');
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     role: '',
@@ -20,6 +22,19 @@ const Users = () => {
     department: ''
   });
   const profileRef = useRef(null);
+  const filterRef = useRef(null);
+
+  // Sample user data
+  const [users, setUsers] = useState([
+    { id: 'GV101', name: 'Surya', email: 'surya@gmail.com', department: 'Electricity', role: 'Lineman' },
+    { id: 'user2101', name: 'Anil', email: 'anil@gmail.com', department: 'Water', role: 'Incharge' },
+    { id: 'user3101', name: 'Manohar', email: 'manohar@gmail.com', department: 'Road', role: 'Safety Checker' },
+    { id: 'user4101', name: 'Rajesh', email: 'rajesh@gmail.com', department: 'Electricity', role: 'Technician' },
+    { id: 'user5101', name: 'Priya', email: 'priya@gmail.com', department: 'Water', role: 'Manager' },
+    { id: 'user6101', name: 'Kumar', email: 'kumar@gmail.com', department: 'Road', role: 'Supervisor' }
+  ]);
+
+  const [filteredUsers, setFilteredUsers] = useState(users);
 
   const toggleSidebar = () => {
     setSidebarExpanded(!sidebarExpanded);
@@ -33,11 +48,46 @@ const Users = () => {
     setShowProfileDropdown(!showProfileDropdown);
   };
 
+  const toggleFilterDropdown = () => {
+    console.log('Filter dropdown toggled:', !showFilterDropdown);
+    setShowFilterDropdown(!showFilterDropdown);
+  };
+
+  const handleFilterSelect = (filter) => {
+    console.log('Filter selected:', filter);
+    setSelectedFilter(filter);
+    setShowFilterDropdown(false);
+    
+    // Apply filter logic
+    if (filter === 'Role') {
+      // Sort by role alphabetically
+      const sortedByRole = [...users].sort((a, b) => a.role.localeCompare(b.role));
+      setFilteredUsers(sortedByRole);
+      console.log('Filtered by Role:', sortedByRole);
+    } else if (filter === 'Department') {
+      // Sort by department alphabetically
+      const sortedByDept = [...users].sort((a, b) => a.department.localeCompare(b.department));
+      setFilteredUsers(sortedByDept);
+      console.log('Filtered by Department:', sortedByDept);
+    } else if (filter === 'Location') {
+      // For location, show all users (since we don't have location data)
+      setFilteredUsers(users);
+      console.log('Filtered by Location (showing all):', users);
+    } else {
+      // Show all users
+      setFilteredUsers(users);
+      console.log('No filter applied, showing all:', users);
+    }
+  };
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
         setShowProfileDropdown(false);
+      }
+      if (filterRef.current && !filterRef.current.contains(event.target)) {
+        setShowFilterDropdown(false);
       }
     };
 
@@ -288,7 +338,13 @@ const Users = () => {
                 onBlur={handleSearchBlur}
               />
             </div>
-            <div className="filter-icon">
+            {selectedFilter && (
+              <div className="active-filter-indicator">
+                <span>Filtered by: {selectedFilter}</span>
+                <button onClick={() => handleFilterSelect('')} style={{marginLeft: '8px', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer'}}>×</button>
+              </div>
+            )}
+            <div className="filter-icon" onClick={toggleFilterDropdown} ref={filterRef} style={{ cursor: 'pointer' }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="4" y1="21" x2="4" y2="14"></line>
                 <line x1="4" y1="10" x2="4" y2="3"></line>
@@ -300,12 +356,34 @@ const Users = () => {
                 <line x1="9" y1="8" x2="15" y2="8"></line>
                 <line x1="17" y1="16" x2="23" y2="16"></line>
               </svg>
+              {showFilterDropdown && <span style={{color: 'red', fontSize: '10px'}}>▼</span>}
+              
+              {showFilterDropdown && (
+                <div className="filter-dropdown">
+                  <div className="filter-option" onClick={() => handleFilterSelect('Role')}>
+                    <span className="radio-icon">{selectedFilter === 'Role' ? '●' : 'O'}</span>
+                    <span>Role</span>
+                  </div>
+                  <div className="filter-option" onClick={() => handleFilterSelect('Location')}>
+                    <span className="radio-icon">{selectedFilter === 'Location' ? '●' : 'O'}</span>
+                    <span>Location</span>
+                  </div>
+                  <div className="filter-option" onClick={() => handleFilterSelect('Department')}>
+                    <span className="radio-icon">{selectedFilter === 'Department' ? '●' : 'O'}</span>
+                    <span>Department</span>
+                  </div>
+                  <div className="filter-option" onClick={() => handleFilterSelect('')}>
+                    <span className="radio-icon">O</span>
+                    <span>Clear Filter</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* Users Table */}
-        <div className="users-table-container">
+        <div className="users-table-container" style={{ marginTop: showFilterDropdown ? '120px' : '0' }}>
           <div className="table-header">
             <h3>Users</h3>
           </div>
@@ -322,45 +400,21 @@ const Users = () => {
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>GV101</td>
-                  <td>Surya</td>
-                  <td>surya@gmail.com</td>
-                  <td>Electricity</td>
-                  <td>Lineman</td>
-                  <td>
-                    <div className="action-buttons">
-                      <button className="edit-btn" aria-label="Edit" onClick={() => handleEditUser('GV101')}><FiEdit2 size={18} /></button>
-                      <button className="delete-btn" aria-label="Delete" onClick={() => handleDeleteUser('GV101')}><FiTrash2 size={18} /></button>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td>user2101</td>
-                  <td>Anil</td>
-                  <td>anil@gmail.com</td>
-                  <td>Water</td>
-                  <td>Incharge</td>
-                  <td>
-                    <div className="action-buttons">
-                      <button className="edit-btn" aria-label="Edit" onClick={() => handleEditUser('user2101')}><FiEdit2 size={18} /></button>
-                      <button className="delete-btn" aria-label="Delete" onClick={() => handleDeleteUser('user2101')}><FiTrash2 size={18} /></button>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td>user3101</td>
-                  <td>Manohar</td>
-                  <td>manohar@gmail.com</td>
-                  <td>Road</td>
-                  <td>Safety Checker</td>
-                  <td>
-                    <div className="action-buttons">
-                      <button className="edit-btn" aria-label="Edit" onClick={() => handleEditUser('user3101')}><FiEdit2 size={18} /></button>
-                      <button className="delete-btn" aria-label="Delete" onClick={() => handleDeleteUser('user3101')}><FiTrash2 size={18} /></button>
-                    </div>
-                  </td>
-                </tr>
+                {filteredUsers.map((user) => (
+                  <tr key={user.id}>
+                    <td>{user.id}</td>
+                    <td>{user.name}</td>
+                    <td>{user.email}</td>
+                    <td>{user.department}</td>
+                    <td>{user.role}</td>
+                    <td>
+                      <div className="action-buttons">
+                        <button className="edit-btn" aria-label="Edit" onClick={() => handleEditUser(user.id)}><FiEdit2 size={18} /></button>
+                        <button className="delete-btn" aria-label="Delete" onClick={() => handleDeleteUser(user.id)}><FiTrash2 size={18} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
