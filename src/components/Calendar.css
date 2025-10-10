@@ -8,6 +8,8 @@
   min-width: 300px;
   overflow: visible;
   height: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .calendar-header {
@@ -44,6 +46,8 @@
 .calendar-content {
   display: flex;
   flex-direction: column;
+  height: auto;
+  overflow: visible;
 }
 
 .calendar-grid {

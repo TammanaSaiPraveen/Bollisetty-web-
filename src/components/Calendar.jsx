@@ -78,6 +78,7 @@ const Calendar = ({ selectedDate, onDateSelect, events = [] }) => {
     });
   };
   
+
   const renderCalendarDays = () => {
     const daysInMonth = getDaysInMonth(currentDate);
     const firstDay = getFirstDayOfMonth(currentDate);
@@ -102,13 +103,13 @@ const Calendar = ({ selectedDate, onDateSelect, events = [] }) => {
       );
     }
     
-    // Ensure we have enough rows to display all dates (only as many as needed)
-    const totalCellsNeeded = Math.ceil((firstDay + daysInMonth) / 7) * 7;
-    const usedCells = firstDay + daysInMonth;
-    
-    // Add empty cells to complete the grid
-    for (let i = usedCells; i < totalCellsNeeded; i++) {
-      days.push(<div key={`empty-end-${i}`} className="calendar-day empty"></div>);
+    // Only add empty cells to complete the current week, not extra rows
+    const currentWeekCells = (firstDay + daysInMonth) % 7;
+    if (currentWeekCells !== 0) {
+      const remainingCells = 7 - currentWeekCells;
+      for (let i = 0; i < remainingCells; i++) {
+        days.push(<div key={`empty-end-${i}`} className="calendar-day empty"></div>);
+      }
     }
     
     return days;
