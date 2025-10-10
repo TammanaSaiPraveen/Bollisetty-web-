@@ -10,6 +10,8 @@ const News = () => {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showAddNewsModal, setShowAddNewsModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState('');
   const [formData, setFormData] = useState({
     date: '',
     time: '',
@@ -17,7 +19,21 @@ const News = () => {
     description: '',
     photo: null
   });
+  
+  // Sample news data
+  const [news, setNews] = useState([
+    { id: 'N001', title: 'Water Supply Disruption', location: 'Ganeshnagar, Tadepalligudem', time: '09:00 AM', date: '2025-10-10', type: 'Trending' },
+    { id: 'N002', title: 'Farmers Meeting', location: 'Rural Area', time: '09:00 AM - 12:00PM', date: '2025-10-10', type: 'Trending' },
+    { id: 'N003', title: 'Farmers Discussion', location: 'Urban Area', time: '09:00 AM - 12:00PM', date: '2025-10-10', type: 'Trending' },
+    { id: 'N004', title: 'Water Supply Disruption', location: 'Ganeshnagar, Tadepalligudem', time: '09:00 AM', date: '2025-10-09', type: 'General' },
+    { id: 'N005', title: 'Road Construction Update', location: 'Main Street, City Center', time: '10:00 AM', date: '2025-10-09', type: 'General' },
+    { id: 'N006', title: 'Electricity Maintenance', location: 'Industrial Zone', time: '01:00 PM', date: '2025-10-09', type: 'General' }
+  ]);
+
+  const [filteredNews, setFilteredNews] = useState(news);
+  
   const profileRef = useRef(null);
+  const filterRef = useRef(null);
 
   const toggleSidebar = () => {
     setSidebarExpanded(!sidebarExpanded);
@@ -29,6 +45,39 @@ const News = () => {
 
   const toggleProfileDropdown = () => {
     setShowProfileDropdown(!showProfileDropdown);
+  };
+
+  const toggleFilterDropdown = () => {
+    console.log('Filter dropdown toggled:', !showFilterDropdown);
+    setShowFilterDropdown(!showFilterDropdown);
+  };
+
+  const handleFilterSelect = (filter) => {
+    console.log('Filter selected:', filter);
+    setSelectedFilter(filter);
+    setShowFilterDropdown(false);
+    
+    // Apply filter logic
+    if (filter === 'Date') {
+      // Sort by date
+      const sortedByDate = [...news].sort((a, b) => new Date(b.date) - new Date(a.date));
+      setFilteredNews(sortedByDate);
+      console.log('Filtered by Date:', sortedByDate);
+    } else if (filter === 'Time') {
+      // Sort by time
+      const sortedByTime = [...news].sort((a, b) => a.time.localeCompare(b.time));
+      setFilteredNews(sortedByTime);
+      console.log('Filtered by Time:', sortedByTime);
+    } else if (filter === 'Location') {
+      // Sort by location
+      const sortedByLocation = [...news].sort((a, b) => a.location.localeCompare(b.location));
+      setFilteredNews(sortedByLocation);
+      console.log('Filtered by Location:', sortedByLocation);
+    } else {
+      // Show all news
+      setFilteredNews(news);
+      console.log('No filter applied, showing all:', news);
+    }
   };
 
   const handleAddNews = () => {
@@ -83,6 +132,9 @@ const News = () => {
     const handleClickOutside = (event) => {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
         setShowProfileDropdown(false);
+      }
+      if (filterRef.current && !filterRef.current.contains(event.target)) {
+        setShowFilterDropdown(false);
       }
     };
 
@@ -279,28 +331,58 @@ const News = () => {
                 </svg>
                 <input type="text" placeholder="Q Search" />
               </div>
-              <button className="filter-btn">
+              {selectedFilter && (
+                <div className="active-filter-indicator">
+                  <span>Filtered by: {selectedFilter}</span>
+                  <button onClick={() => handleFilterSelect('')} style={{marginLeft: '8px', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer'}}>×</button>
+                </div>
+              )}
+              <div className="filter-icon" onClick={toggleFilterDropdown} ref={filterRef} style={{ cursor: 'pointer' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"></polygon>
                 </svg>
-              </button>
+                {showFilterDropdown && <span style={{color: 'red', fontSize: '10px'}}>▼</span>}
+                
+                {showFilterDropdown && (
+                  <div className="filter-dropdown">
+                    <div className="filter-option" onClick={() => handleFilterSelect('Date')}>
+                      <span className="radio-icon">{selectedFilter === 'Date' ? '●' : 'O'}</span>
+                      <span>Date</span>
+                    </div>
+                    <div className="filter-option" onClick={() => handleFilterSelect('Time')}>
+                      <span className="radio-icon">{selectedFilter === 'Time' ? '●' : 'O'}</span>
+                      <span>Time</span>
+                    </div>
+                    <div className="filter-option" onClick={() => handleFilterSelect('Location')}>
+                      <span className="radio-icon">{selectedFilter === 'Location' ? '●' : 'O'}</span>
+                      <span>Location</span>
+                    </div>
+                    <div className="filter-option" onClick={() => handleFilterSelect('')}>
+                      <span className="radio-icon">O</span>
+                      <span>Clear Filter</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Trending News Section */}
-          <div className="news-section">
+          <div className="news-section" style={{ marginTop: showFilterDropdown ? '120px' : '0' }}>
             <h2>Trending News</h2>
             <div className="news-cards vertical">
-              <div className="news-card">
-                <div className="news-card-image">
-                  <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 120'%3E%3Crect width='200' height='120' fill='%23e5e7eb'/%3E%3Ccircle cx='100' cy='55' r='18' fill='%233b82f6'/%3E%3Cpath d='M80 85 L120 85 M100 73 L100 97' stroke='%233b82f6' stroke-width='4'/%3E%3C/svg%3E" alt="News icon" />
+              {filteredNews.filter(newsItem => newsItem.type === 'Trending').map(newsItem => (
+                <div className="news-card" key={newsItem.id}>
+                  <div className="news-card-image">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 120'%3E%3Crect width='200' height='120' fill='%23e5e7eb'/%3E%3Ccircle cx='100' cy='55' r='18' fill='%233b82f6'/%3E%3Cpath d='M80 85 L120 85 M100 73 L100 97' stroke='%233b82f6' stroke-width='4'/%3E%3C/svg%3E" alt="News icon" />
+                  </div>
+                  <div className="news-card-content">
+                    <h3>{newsItem.title}</h3>
+                    <p className="news-location">Location: {newsItem.location}</p>
+                    <p className="news-time">Time: {newsItem.time}</p>
+                  </div>
                 </div>
-                <div className="news-card-content">
-                  <h3>Water Supply Disruption</h3>
-                  <p className="news-location">Location: Ganeshnagar, Tadepalligudem</p>
-                  <p className="news-time">Time: 09:00 AM</p>
-                </div>
-              </div>
+              ))}
               <div className="news-card">
                 <div className="news-card-content">
                   <h3>Farmers</h3>
@@ -318,24 +400,20 @@ const News = () => {
 
           {/* Dated News Section */}
           <div className="news-section">
-            <h2>07/09/2025</h2>
+            <h2>{filteredNews.find(newsItem => newsItem.type === 'General')?.date || '07/09/2025'}</h2>
             <div className="news-cards vertical">
-              <div className="news-card">
-                <div className="news-card-image">
-                  <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 120'%3E%3Crect width='200' height='120' fill='%23e5e7eb'/%3E%3Ccircle cx='100' cy='55' r='18' fill='%233b82f6'/%3E%3Cpath d='M80 85 L120 85 M100 73 L100 97' stroke='%233b82f6' stroke-width='4'/%3E%3C/svg%3E" alt="News icon" />
+              {filteredNews.filter(newsItem => newsItem.type === 'General').map(newsItem => (
+                <div className="news-card" key={newsItem.id}>
+                  <div className="news-card-image">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 120'%3E%3Crect width='200' height='120' fill='%23e5e7eb'/%3E%3Ccircle cx='100' cy='55' r='18' fill='%233b82f6'/%3E%3Cpath d='M80 85 L120 85 M100 73 L100 97' stroke='%233b82f6' stroke-width='4'/%3E%3C/svg%3E" alt="News icon" />
+                  </div>
+                  <div className="news-card-content">
+                    <h3>{newsItem.title}</h3>
+                    <p className="news-location">Location: {newsItem.location}</p>
+                    <p className="news-time">Time: {newsItem.time}</p>
+                  </div>
                 </div>
-                <div className="news-card-content">
-                  <h3>Water Supply Disruption</h3>
-                  <p className="news-location">Location: Ganeshnagar, Tadepalligudem</p>
-                  <p className="news-time">Time: 09:00 AM</p>
-                </div>
-              </div>
-              <div className="news-card">
-                <div className="news-card-content">
-                  <h3>Farmers</h3>
-                  <p className="news-time">Time: 09:00 AM - 12:00PM</p>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </main>
