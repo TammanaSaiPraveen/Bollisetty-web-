@@ -267,7 +267,7 @@ const Development = () => {
                 <circle cx="11" cy="11" r="8"></circle>
                 <path d="M21 21l-4.35-4.35"></path>
               </svg>
-              <input type="text" placeholder="Q Search" style={{width: '60px', minWidth: '60px', maxWidth: '60px'}} />
+              <input type="text" placeholder="Search" style={{width: '60px', minWidth: '60px', maxWidth: '60px'}} />
             </div>
             <button className="filter-btn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
