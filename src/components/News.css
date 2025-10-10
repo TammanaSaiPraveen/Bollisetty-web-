@@ -797,9 +797,6 @@ input[type="date"]::-webkit-datetime-edit-year-field:focus {
 }
 
 .add-btn, .cancel-btn {
-  padding: 0.5rem 1.25rem;
-  border-radius: 9999px;
-.add-btn, .cancel-btn {
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   font-size: 0.875rem;
@@ -814,14 +811,10 @@ input[type="date"]::-webkit-datetime-edit-year-field:focus {
 }
 
 .add-btn {
-  background: #2563eb;
-.add-btn {
   background: #3b82f6;
   color: white;
 }
 
-.add-btn:hover {
-  background: #1d4ed8;
 .add-btn:hover {
   background: #2563eb;
 }
