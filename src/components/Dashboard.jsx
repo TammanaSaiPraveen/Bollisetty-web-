@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import './Dashboard.css';
+import Calendar from './Calendar';
 import logoImage from '../assets/Images/Authoritative Government Service App Logo (1).png';
 import fullLogo from '../assets/Images/fulllogo.png';
 import apImage from '../assets/Images/AP.png';
@@ -13,6 +14,33 @@ const Dashboard = () => {
   const [planExpanded, setPlanExpanded] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const profileRef = useRef(null);
+
+  // Sample events for the calendar
+  const calendarEvents = [
+    {
+      id: 1,
+      title: "CM Camp Office Meeting",
+      date: new Date().toISOString(),
+      type: "meeting"
+    },
+    {
+      id: 2,
+      title: "Public Hearing",
+      date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+      type: "public"
+    },
+    {
+      id: 3,
+      title: "Infrastructure Review",
+      date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+      type: "review"
+    }
+  ];
+
+  const handleDateSelect = (selectedDate) => {
+    console.log('Selected date:', selectedDate);
+    // You can add logic here to show events for the selected date
+  };
 
   const toggleSidebar = () => {
     setSidebarExpanded(!sidebarExpanded);
@@ -296,81 +324,10 @@ const Dashboard = () => {
              {/* Top Right Section - Calendar + Schedule + News */}
              <div className="top-right-section">
                {/* Calendar Widget */}
-               <div className="calendar-widget">
-                 <div className="calendar-header">
-                   <h3>September</h3>
-                 </div>
-                 <div className="calendar-content">
-                   <div className="calendar-week-numbers">
-                     <div>36</div>
-                     <div>37</div>
-                     <div>38</div>
-                     <div>39</div>
-                     <div>40</div>
-                     <div>41</div>
-                   </div>
-                   <div className="calendar-main">
-                     <div className="calendar-weekdays">
-                       <div>Mo</div>
-                       <div>Tu</div>
-                       <div>We</div>
-                       <div>Th</div>
-                       <div>Fr</div>
-                       <div>Sa</div>
-                       <div>Su</div>
-                     </div>
-                     <div className="calendar-dates">
-                       <div className="date-cell prev-month">1</div>
-                       <div className="date-cell prev-month">2</div>
-                       <div className="date-cell prev-month">3</div>
-                       <div className="date-cell prev-month">4</div>
-                       <div className="date-cell prev-month">5</div>
-                       <div className="date-cell">1</div>
-                       <div className="date-cell">2</div>
-                       <div className="date-cell">3</div>
-                       <div className="date-cell">4</div>
-                       <div className="date-cell">5</div>
-                       <div className="date-cell">6</div>
-                       <div className="date-cell">7</div>
-                       <div className="date-cell">8</div>
-                       <div className="date-cell">9</div>
-                       <div className="date-cell">10</div>
-                       <div className="date-cell">11</div>
-                       <div className="date-cell">12</div>
-                       <div className="date-cell selected">13</div>
-                       <div className="date-cell">14</div>
-                       <div className="date-cell">15</div>
-                       <div className="date-cell">16</div>
-                       <div className="date-cell">17</div>
-                       <div className="date-cell">18</div>
-                       <div className="date-cell">19</div>
-                       <div className="date-cell">20</div>
-                       <div className="date-cell">21</div>
-                       <div className="date-cell">22</div>
-                       <div className="date-cell">23</div>
-                       <div className="date-cell">24</div>
-                       <div className="date-cell">25</div>
-                       <div className="date-cell">26</div>
-                       <div className="date-cell">27</div>
-                       <div className="date-cell">28</div>
-                       <div className="date-cell">29</div>
-                       <div className="date-cell">30</div>
-                       <div className="date-cell next-month">1</div>
-                       <div className="date-cell next-month">2</div>
-                       <div className="date-cell next-month">3</div>
-                       <div className="date-cell next-month">4</div>
-                       <div className="date-cell next-month">5</div>
-                       <div className="date-cell next-month">6</div>
-                       <div className="date-cell next-month">7</div>
-                       <div className="date-cell next-month">8</div>
-                       <div className="date-cell next-month">9</div>
-                       <div className="date-cell next-month">10</div>
-                       <div className="date-cell next-month">11</div>
-                       <div className="date-cell next-month">12</div>
-                     </div>
-                   </div>
-                 </div>
-               </div>
+               <Calendar 
+                 events={calendarEvents}
+                 onDateSelect={handleDateSelect}
+               />
 
                {/* Today's Schedule Section */}
                <div className="schedule-section">
