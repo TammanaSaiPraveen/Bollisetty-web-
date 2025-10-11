@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import logoImage from '../assets/Images/Authoritative Government Service App Logo (1).png';
 import fullLogo from '../assets/Images/fulllogo.png';
 import apImage from '../assets/Images/AP.png';
 
@@ -8,11 +7,9 @@ const Grievances = () => {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [planExpanded, setPlanExpanded] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-  const [searchWidth, setSearchWidth] = useState('60px');
   const [showAddGrievanceModal, setShowAddGrievanceModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState('');
   const [formData, setFormData] = useState({
     constituency: '',
     department: '',
@@ -23,7 +20,7 @@ const Grievances = () => {
   });
   
   // Sample grievances data
-  const [grievances, setGrievances] = useState([
+  const [grievances] = useState([
     { id: 'GV101', grievance: 'Water Supply Disruption', area: 'Tadepaligudem', department: 'Water', status: 'Ongoing' },
     { id: 'GV102', grievance: 'Road Repair Needed', area: 'Ganeshnagar', department: 'Road', status: 'Completed' },
     { id: 'GV103', grievance: 'Electricity Outage', area: 'Rajahmundry', department: 'Electricity', status: 'Current' },
@@ -56,7 +53,6 @@ const Grievances = () => {
 
   const handleFilterSelect = (filter) => {
     console.log('Filter selected:', filter);
-    setSelectedFilter(filter);
     setShowFilterDropdown(false);
     
     // Apply filter logic
@@ -112,13 +108,6 @@ const Grievances = () => {
     }));
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    setFormData(prev => ({
-      ...prev,
-      photo: file
-    }));
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -152,17 +141,6 @@ const Grievances = () => {
     };
   }, []);
 
-  // Set responsive search width
-  useEffect(() => {
-    const updateSearchWidth = () => {
-      setSearchWidth(window.innerWidth <= 768 ? '50px' : '60px');
-    };
-    
-    updateSearchWidth();
-    window.addEventListener('resize', updateSearchWidth);
-    
-    return () => window.removeEventListener('resize', updateSearchWidth);
-  }, []);
 
   return (
     <div className={`min-h-screen bg-gray-100 font-inter ${sidebarExpanded ? 'sidebar-expanded' : 'sidebar-collapsed'}`}>

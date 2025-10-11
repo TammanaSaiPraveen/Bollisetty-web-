@@ -1,18 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
-import logoImage from '../assets/Images/Authoritative Government Service App Logo (1).png';
 import fullLogo from '../assets/Images/fulllogo.png';
+import apImage from '../assets/Images/AP.png';
 
 const Users = () => {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [planExpanded, setPlanExpanded] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-  const [searchWidth, setSearchWidth] = useState('60px');
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     role: '',
@@ -24,7 +22,7 @@ const Users = () => {
   const filterRef = useRef(null);
 
   // Sample user data
-  const [users, setUsers] = useState([
+  const [users] = useState([
     { id: 'GV101', name: 'Surya', email: 'surya@gmail.com', department: 'Electricity', role: 'Lineman' },
     { id: 'user2101', name: 'Anil', email: 'anil@gmail.com', department: 'Water', role: 'Incharge' },
     { id: 'user3101', name: 'Manohar', email: 'manohar@gmail.com', department: 'Road', role: 'Safety Checker' },
@@ -54,7 +52,6 @@ const Users = () => {
 
   const handleFilterSelect = (filter) => {
     console.log('Filter selected:', filter);
-    setSelectedFilter(filter);
     setShowFilterDropdown(false);
     
     // Apply filter logic
@@ -127,27 +124,6 @@ const Users = () => {
     });
   };
 
-  const handleSearchFocus = () => {
-    setSearchWidth('200px');
-  };
-
-  const handleSearchBlur = () => {
-    setSearchWidth('60px');
-  };
-
-  const handleEditUser = (userId) => {
-    console.log('Edit user:', userId);
-    // Add edit functionality here
-    alert(`Edit user: ${userId}`);
-  };
-
-  const handleDeleteUser = (userId) => {
-    console.log('Delete user:', userId);
-    // Add delete functionality here
-    if (window.confirm(`Are you sure you want to delete user: ${userId}?`)) {
-      alert(`User ${userId} deleted successfully!`);
-    }
-  };
 
   return (
     <div className={`min-h-screen bg-gray-100 font-inter ${sidebarExpanded ? 'sidebar-expanded' : 'sidebar-collapsed'}`}>

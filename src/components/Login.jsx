@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import logoImage from '../assets/Images/Authoritative Government Service App Logo (1).png';
 import bjpImage from '../assets/Images/BJP.png';
 import janasenaImage from '../assets/Images/Janasena.jpg';
 import tdpImage from '../assets/Images/TDP.jpg';
+import fullLogo from '../assets/Images/fulllogo.png';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -109,9 +109,12 @@ const Login = () => {
         <div className="w-full max-w-md">
           {/* Logo and Brand */}
           <div className="mb-8 text-left pl-0">
-            <div className="flex items-center gap-4 mb-0 justify-start -ml-2">
-              <img src={logoImage} alt="Logo" className="w-12 h-12 object-contain bg-white rounded-full p-1 shadow-lg -ml-1" />
-              <span className="text-xl font-semibold text-gray-800 -ml-1">మన బొలిశెట్టి</span>
+            <div className="flex items-center gap-3 mb-4">
+              <img 
+                src={fullLogo} 
+                alt="TADEPALIGUDEM SS Logo" 
+                className="w-12 h-12 object-contain"
+              />
             </div>
             <h1 className="text-4xl font-bold text-gray-900 mt-4 mb-2 tracking-tight">Login</h1>
             <p className="text-base text-gray-500 m-0 font-normal">Welcome!</p>
@@ -120,26 +123,26 @@ const Login = () => {
           {/* Login Form */}
           <div className="w-full">
             <form onSubmit={handleSubmit} className="w-full">
-              <div className="mb-3.5">
+              <div className="mb-4">
                 <input
                   type="email"
                   name="email"
                   placeholder="Enter Email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full px-3.5 py-3 border-2 border-gray-300 rounded-md text-sm transition-all duration-200 box-border bg-white text-gray-700 focus:outline-none focus:border-blue-500 focus:shadow-lg focus:shadow-blue-100 placeholder-gray-400"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-md text-sm transition-all duration-200 bg-white text-gray-700 focus:outline-none focus:border-blue-500 placeholder-gray-400"
                   required
                 />
               </div>
 
-              <div className="mb-3.5">
+              <div className="mb-4">
                 <input
                   type="password"
                   name="password"
                   placeholder="Enter Password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full px-3.5 py-3 border-2 border-gray-300 rounded-md text-sm transition-all duration-200 box-border bg-white text-gray-700 focus:outline-none focus:border-blue-500 focus:shadow-lg focus:shadow-blue-100 placeholder-gray-400"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-md text-sm transition-all duration-200 bg-white text-gray-700 focus:outline-none focus:border-blue-500 placeholder-gray-400"
                   required
                 />
               </div>
@@ -157,11 +160,12 @@ const Login = () => {
                 </label>
               </div>
 
-              <button type="submit" className="w-full py-3 px-4 bg-blue-500 text-white border-none rounded-md text-sm font-semibold cursor-pointer transition-all duration-200 mb-3 shadow-sm hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-400">
-                Login
-              </button>
-
-              <button type="button" onClick={handleForgotPassword} className="block text-center text-blue-500 no-underline text-sm mb-6 font-medium hover:underline hover:text-blue-600">Forgot Password!</button>
+              <div className="flex items-center justify-between mb-4">
+                <button type="button" onClick={handleForgotPassword} className="text-blue-500 no-underline text-sm font-medium hover:underline hover:text-blue-600">Forgot Password!</button>
+                <button type="submit" className="py-2 px-6 bg-blue-500 text-white border-none rounded-md text-sm font-semibold cursor-pointer transition-all duration-200 hover:bg-blue-600">
+                  Login
+                </button>
+              </div>
             </form>
 
             {/* Divider */}
@@ -176,8 +180,8 @@ const Login = () => {
                 Do not have Account? <Link to="/signup" className="text-blue-500 no-underline font-semibold hover:underline hover:text-blue-600">Sign up</Link>
               </p>
 
-              <div className="flex flex-col gap-2">
-                <button className="flex items-center justify-center gap-3 py-2.5 px-3.5 border-2 border-gray-300 rounded-md bg-white text-gray-700 text-sm font-medium cursor-pointer transition-all duration-200 hover:border-gray-400 hover:bg-gray-50 hover:border-blue-500 hover:shadow-lg hover:shadow-blue-150">
+              <div className="flex flex-col gap-3">
+                <button className="flex items-center justify-center gap-3 py-3 px-4 border border-gray-300 rounded-md bg-white text-gray-700 text-sm font-medium cursor-pointer transition-all duration-200 hover:border-gray-400 hover:bg-gray-50">
                   <svg className="flex-shrink-0" viewBox="0 0 24 24" width="20" height="20">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -187,7 +191,7 @@ const Login = () => {
                   Continue with Google
                 </button>
 
-                <button className="flex items-center justify-center gap-3 py-2.5 px-3.5 border-2 border-gray-300 rounded-md bg-white text-gray-700 text-sm font-medium cursor-pointer transition-all duration-200 hover:border-gray-400 hover:bg-gray-50 hover:border-black hover:shadow-lg hover:shadow-black-100">
+                <button className="flex items-center justify-center gap-3 py-3 px-4 border border-gray-300 rounded-md bg-white text-gray-700 text-sm font-medium cursor-pointer transition-all duration-200 hover:border-gray-400 hover:bg-gray-50">
                   <svg className="flex-shrink-0" viewBox="0 0 24 24" width="20" height="20">
                     <path fill="#000" d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
                   </svg>
@@ -202,9 +206,26 @@ const Login = () => {
       {/* Right side - Hero Image */}
       <div className="flex-1 bg-white relative overflow-hidden max-h-screen">
         <div 
-          className="w-full h-full bg-white relative bg-cover bg-center bg-no-repeat transition-all duration-1000 animate-fade-in-out"
-          style={{ backgroundImage: `url(${images[currentImageIndex]})`, backgroundSize: '80%' }}
+          className="w-full h-full bg-white relative bg-cover bg-center bg-no-repeat transition-all duration-1000 animate-fade-in-out rounded-lg"
+          style={{ backgroundImage: `url(${images[currentImageIndex]})`, backgroundSize: 'cover' }}
         >
+          {/* Quote Overlay */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center text-white p-8">
+              <div className="text-2xl font-bold mb-2">Once we decide, we have to do something, we can go miles ahead.</div>
+            </div>
+          </div>
+          
+          {/* BJP Logo in top right */}
+          <div className="absolute top-4 right-4">
+            <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center border-2 border-black">
+              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="#FF6B35">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

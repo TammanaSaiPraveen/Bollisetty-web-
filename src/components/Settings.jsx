@@ -9,7 +9,11 @@ const Settings = () => {
   useEffect(() => {
     const saved = localStorage.getItem('app_settings')
     if (saved) {
-      try { setSettings(JSON.parse(saved)) } catch {}
+      try { 
+        setSettings(JSON.parse(saved)) 
+      } catch (error) {
+        console.error('Error parsing saved settings:', error);
+      }
     }
   }, [])
 

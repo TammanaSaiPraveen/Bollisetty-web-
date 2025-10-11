@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 // import './Schedule.css'; // Converted to Tailwind
-import logoImage from '../assets/Images/Authoritative Government Service App Logo (1).png';
 import fullLogo from '../assets/Images/fulllogo.png';
 
 const Schedule = () => {
@@ -21,7 +20,7 @@ const Schedule = () => {
   });
   
   // Sample schedule data
-  const [schedules, setSchedules] = useState([
+  const [schedules] = useState([
     { id: 'S001', title: 'Meet at CM Camp Office', location: 'Velangapudi, Amaravathi, AP', time: '09:00 AM - 12:00 PM', date: '2025-10-10', type: 'Today' },
     { id: 'S002', title: 'Farmers Meeting', location: 'Rural Area', time: '09:00 AM - 12:00 PM', date: '2025-10-10', type: 'Today' },
     { id: 'S003', title: 'Farmers Discussion', location: 'Urban Area', time: '09:00 AM - 12:00 PM', date: '2025-10-10', type: 'Today' },

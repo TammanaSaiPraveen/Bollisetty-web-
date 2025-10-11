@@ -21,7 +21,11 @@ const Profile = () => {
   useEffect(() => {
     const saved = localStorage.getItem('app_profile')
     if (saved) {
-      try { setProfile(JSON.parse(saved)) } catch {}
+      try { 
+        setProfile(JSON.parse(saved)) 
+      } catch (error) {
+        console.error('Error parsing saved profile:', error);
+      }
     }
   }, [])
 

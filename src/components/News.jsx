@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 // import './News.css'; // Converted to Tailwind
-import logoImage from '../assets/Images/Authoritative Government Service App Logo (1).png';
 import fullLogo from '../assets/Images/fulllogo.png';
 
 const News = () => {
@@ -21,7 +20,7 @@ const News = () => {
   });
   
   // Sample news data
-  const [news, setNews] = useState([
+  const [news] = useState([
     { id: 'N001', title: 'Water Supply Disruption', location: 'Ganeshnagar, Tadepalligudem', time: '09:00 AM', date: '2025-10-10', type: 'Trending' },
     { id: 'N002', title: 'Farmers Meeting', location: 'Rural Area', time: '09:00 AM - 12:00PM', date: '2025-10-10', type: 'Trending' },
     { id: 'N003', title: 'Farmers Discussion', location: 'Urban Area', time: '09:00 AM - 12:00PM', date: '2025-10-10', type: 'Trending' },

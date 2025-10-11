@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Calendar from './Calendar';
-import logoImage from '../assets/Images/Authoritative Government Service App Logo (1).png';
 import fullLogo from '../assets/Images/fulllogo.png';
 import apImage from '../assets/Images/AP.png';
 import streetLightImg from '../assets/Images/Street_Light.png';

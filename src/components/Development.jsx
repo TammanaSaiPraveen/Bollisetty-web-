@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 // import './Development.css'; // Converted to Tailwind
-import logoImage from '../assets/Images/Authoritative Government Service App Logo (1).png';
 import fullLogo from '../assets/Images/fulllogo.png';
 
 const Development = () => {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [planExpanded, setPlanExpanded] = useState(false);
   const [showAddProjectsModal, setShowAddProjectsModal] = useState(false);
-  const [showCompletedProjects, setShowCompletedProjects] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedProjectType, setSelectedProjectType] = useState('current');
@@ -23,7 +21,7 @@ const Development = () => {
   });
   
   // Sample development projects data
-  const [projects, setProjects] = useState([
+  const [projects] = useState([
     { id: 'D001', title: 'Smart City Infrastructure', location: 'Hyderabad', status: 'In Progress', launchDate: '2025-12-15', type: 'current' },
     { id: 'D002', title: 'Digital Governance Platform', location: 'Amaravathi', status: 'Planning', launchDate: '2025-11-20', type: 'current' },
     { id: 'D003', title: 'Rural Connectivity Project', location: 'Vijayawada', status: 'Completed', launchDate: '2025-10-05', type: 'completed' },
@@ -34,7 +32,6 @@ const Development = () => {
 
   const [filteredProjects, setFilteredProjects] = useState(projects);
   
-  const profileRef = useRef(null);
   const filterRef = useRef(null);
 
   const toggleSidebar = () => {
@@ -139,9 +136,6 @@ const Development = () => {
     };
   }, []);
 
-  const toggleProjectsView = () => {
-    setShowCompletedProjects(prev => !prev);
-  };
 
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
@@ -150,11 +144,8 @@ const Development = () => {
   const selectProjectType = (type) => {
     setSelectedProjectType(type);
     setShowDropdown(false);
-    if (type === 'completed') {
-      setShowCompletedProjects(true);
-    } else {
-      setShowCompletedProjects(false);
-    }
+    // Handle project type selection
+    console.log('Selected project type:', type);
   };
 
   const getProjectTypeLabel = () => {

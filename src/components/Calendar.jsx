@@ -28,11 +28,6 @@ const Calendar = ({ selectedDate, onDateSelect, events = [] }) => {
     return firstDay === 0 ? 6 : firstDay - 1; // Convert Sunday (0) to Monday (6)
   };
   
-  const getWeekNumber = (date) => {
-    const start = new Date(date.getFullYear(), 0, 1);
-    const days = Math.floor((date - start) / (24 * 60 * 60 * 1000));
-    return Math.ceil((days + start.getDay() + 1) / 7);
-  };
   
   const navigateMonth = (direction) => {
     setCurrentDate(prev => {
