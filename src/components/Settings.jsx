@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import './Settings.css'
+// import './Settings.css' // Converted to Tailwind
 
 const Settings = () => {
   const [settings, setSettings] = useState({ theme: 'system', accent: '#667eea', emailAlerts: true, push: false, twoFA: false, sessionMins: 30 })

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import './Reports.css';
+// import './Reports.css'; // Converted to Tailwind
 import logoImage from '../assets/Images/Authoritative Government Service App Logo (1).png';
 
 const Reports = () => {

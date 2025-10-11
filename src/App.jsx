@@ -11,7 +11,7 @@ import News from './components/News'
 import Development from './components/Development'
 import Profile from './components/Profile'
 import Settings from './components/Settings'
-import './App.css'
+// App.css removed - using Tailwind CSS
 
 function App() {
   return (

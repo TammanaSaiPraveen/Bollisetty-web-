@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import './Login.css';
 import logoImage from '../assets/Images/Authoritative Government Service App Logo (1).png';
 import bjpImage from '../assets/Images/BJP.png';
 import janasenaImage from '../assets/Images/Janasena.jpg';
@@ -46,24 +45,24 @@ const SignUp = () => {
   };
 
   return (
-    <div className="login-container">
+    <div className="flex h-screen max-h-screen overflow-hidden font-inter">
       {/* Left side - Sign Up Form */}
-      <div className="login-form-section">
-        <div className="login-form-container">
+      <div className="flex-1 bg-white flex items-center justify-center p-6 overflow-hidden max-h-screen">
+        <div className="w-full max-w-md">
           {/* Logo and Brand */}
-          <div className="brand-section">
-            <div className="logo">
-              <img src={logoImage} alt="Logo" className="logo-image" />
-              <span className="brand-name">మన బొలిశెట్టి</span>
+          <div className="mb-8 text-left pl-0">
+            <div className="flex items-center gap-4 mb-0 justify-start -ml-2">
+              <img src={logoImage} alt="Logo" className="w-12 h-12 object-contain bg-white rounded-full p-1 shadow-lg -ml-1" />
+              <span className="text-xl font-semibold text-gray-800 -ml-1">మన బొలిశెట్టి</span>
             </div>
           </div>
 
           {/* Sign Up Form */}
-          <div className="form-section">
-            <h1 className="login-title">Sign Up</h1>
-            <p className="login-subtitle">Create your account</p>
+          <div className="w-full">
+            <h1 className="text-4xl font-bold text-gray-900 mt-4 mb-2 tracking-tight">Sign Up</h1>
+            <p className="text-base text-gray-500 m-0 font-normal">Create your account</p>
 
-            <form onSubmit={handleSubmit} className="login-form">
+            <form onSubmit={handleSubmit} className="w-full">
               <div className="input-row">
                 <div className="input-group half">
                   <input
