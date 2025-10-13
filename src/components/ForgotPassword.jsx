@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import './Login.css';
+// import './Login.css';
 import logoImage from '../assets/Images/Authoritative Government Service App Logo (1).png';
 import bjpImage from '../assets/Images/BJP.png';
 import janasenaImage from '../assets/Images/Janasena.jpg';
