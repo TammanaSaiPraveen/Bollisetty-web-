@@ -6,6 +6,7 @@ import apImage from '../assets/Images/AP.png';
 import newsThumbWater from '../assets/Images/Water_Supply1.png';
 import newsThumbPotholes from '../assets/Images/potholes.png';
 import newsThumbLight from '../assets/Images/Street_Light.png';
+import filterIcon from '../assets/icons/filter.png'
 
 const News = () => {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
@@ -22,6 +23,15 @@ const News = () => {
   const [selectedTimes, setSelectedTimes] = useState([]);
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [formData, setFormData] = useState({ date: '', time: '', title: '', description: '', photo: null });
+  const [trendingNews, setTrendingNews] = useState([
+    { date: 'Trending', title: 'Water Supply Disruption', location: 'Ganeshnagar, Tadepalligudem', time: '09:00 AM', img: newsThumbWater },
+    { date: 'Trending', title: 'Farmers', location: '', time: '09:00 AM - 12:00PM', img: newsThumbPotholes },
+    { date: 'Trending', title: 'Farmers', location: '', time: '09:00 AM - 12:00PM', img: newsThumbLight },
+  ]);
+  const [datedNews, setDatedNews] = useState([
+    { date: '07/09/2025', title: 'Water Supply Disruption', location: 'Ganeshnagar, Tadepalligudem', time: '09:00 AM', img: newsThumbWater },
+    { date: '07/09/2025', title: 'Farmers', location: '', time: '09:00 AM - 12:00PM', img: newsThumbPotholes },
+  ]);
   const profileRef = useRef(null);
 
   const toggleSidebar = () => setSidebarExpanded(!sidebarExpanded);
@@ -44,10 +54,18 @@ const News = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('News data:', formData);
+    const isTrending = formData.date.toLowerCase() === 'trending';
+    const imageSrc = formData.photo ? URL.createObjectURL(formData.photo) : newsThumbWater;
+    const newItem = { date: formData.date || 'Trending', title: formData.title, location: formData.description, time: formData.time || '', img: imageSrc };
+    if (isTrending) {
+      setTrendingNews(prev => [newItem, ...prev]);
+    } else {
+      setDatedNews(prev => [newItem, ...prev]);
+    }
     setShowAddNewsModal(false);
     setShowSuccessModal(true);
-    setTimeout(() => setShowSuccessModal(false), 3000);
+    setTimeout(() => setShowSuccessModal(false), 2000);
+    setFormData({ date: '', time: '', title: '', description: '', photo: null });
   };
 
   useEffect(() => {
@@ -77,11 +95,21 @@ const News = () => {
           <div className="w-10 h-10 flex items-center justify-center text-gray-800 cursor-pointer rounded-md transition relative hover:bg-white/10" onClick={toggleProfileDropdown} ref={profileRef}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             {showProfileDropdown && (
-              <div className="absolute top-full right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-[1000] mt-2 min-w-40 overflow-hidden">
-                <div className="flex items-center gap-3 px-4 py-3 text-gray-700 cursor-pointer text-sm font-medium hover:bg-gray-100">
+              <div className="absolute top-full right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-[1000] mt-2 min-w-48 overflow-hidden">
+                <Link to="/profile" className="flex items-center gap-3 px-4 py-3 text-gray-700 cursor-pointer text-sm font-medium hover:bg-gray-100">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                   <span>My Profile</span>
-                </div>
+                </Link>
+                <Link to="/posts" className="flex items-center gap-3 px-4 py-3 text-gray-700 cursor-pointer text-sm font-medium hover:bg-gray-100">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14,2 14,8 20,8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10,9 9,9 8,9"></polyline>
+                  </svg>
+                  <span>My Posts</span>
+                </Link>
                 <div className="flex items-center gap-3 px-4 py-3 text-gray-700 cursor-pointer text-sm font-medium hover:bg-gray-100">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                   <span>Settings</span>
@@ -156,12 +184,12 @@ const News = () => {
           {/* Search and Filter */}
         <div className="mb-6">
           <div className="flex items-center gap-3 relative">
-            <div className="flex items-center rounded-md px-3 py-2 transition overflow-hidden shadow-sm" style={{ width: '320px', backgroundColor: 'rgba(255,255,255,0.6)', border: '1px solid rgba(209,213,219,0.6)' }}>
+            <div className="flex items-center rounded-md px-3 py-2 transition overflow-hidden shadow-sm bg-white border border-gray-300" style={{ width: '320px' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500 mr-2 shrink-0"><circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.35-4.35"></path></svg>
               <input type="text" placeholder="Search" value={searchTerm} onChange={(e)=>setSearchTerm(e.target.value)} className="border-0 outline-none text-sm text-gray-700 bg-transparent w-full placeholder:text-gray-400" />
               </div>
             <button type="button" onClick={()=>setShowFilter((s)=>!s)} className="w-10 h-10 flex items-center justify-center rounded-md cursor-pointer hover:bg-white/90 shadow-sm" style={{ backgroundColor: 'rgba(255,255,255,0.6)', border: '1px solid rgba(209,213,219,0.6)' }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"></polygon></svg>
+              <img src={filterIcon} alt="Filter" className="w-10 h-10" />
             </button>
 
             {showFilter && (
@@ -221,15 +249,8 @@ const News = () => {
         {/* Filtered sections */}
         {(() => {
           const timeBucket = (t) => (t.includes('AM') ? 'Morning' : 'Afternoon');
-          const trending = [
-            { date: 'Trending', title: 'Water Supply Disruption', location: 'Ganeshnagar, Tadepalligudem', time: '09:00 AM', img: newsThumbWater },
-            { date: 'Trending', title: 'Farmers', location: '', time: '09:00 AM - 12:00PM', img: newsThumbPotholes },
-            { date: 'Trending', title: 'Farmers', location: '', time: '09:00 AM - 12:00PM', img: newsThumbLight },
-          ];
-          const dated = [
-            { date: '07/09/2025', title: 'Water Supply Disruption', location: 'Ganeshnagar, Tadepalligudem', time: '09:00 AM', img: newsThumbWater },
-            { date: '07/09/2025', title: 'Farmers', location: '', time: '09:00 AM - 12:00PM', img: newsThumbPotholes },
-          ];
+          const trending = trendingNews;
+          const dated = datedNews;
           const matches = (item) => {
             const text = `${item.title} ${item.location} ${item.time}`.toLowerCase();
             const searchOk = text.includes(searchTerm.toLowerCase());
@@ -299,8 +320,8 @@ const News = () => {
                   <div className="relative">
                     <input className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700 pr-9" id="date" name="date" value={formData.date} onChange={handleInputChange} placeholder="DD-MM-YYYY" required />
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                  </div>
                 </div>
+              </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1" htmlFor="time">Time</label>
                   <input className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" id="time" name="time" value={formData.time} onChange={handleInputChange} placeholder="HH:MM:SS" required />
@@ -308,11 +329,11 @@ const News = () => {
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-medium text-gray-600 mb-1" htmlFor="title">News Title</label>
                   <input className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" id="title" name="title" value={formData.title} onChange={handleInputChange} placeholder="Enter News Title" required />
-                </div>
+              </div>
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-medium text-gray-600 mb-1" htmlFor="description">Description</label>
                   <input className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" id="description" name="description" value={formData.description} onChange={handleInputChange} placeholder="Detailed Description....." required />
-                </div>
+              </div>
               </div>
               <div className="mt-4">
                 <label className="block text-xs font-medium text-gray-600 mb-1" htmlFor="photo">Upload Photo</label>
@@ -321,8 +342,8 @@ const News = () => {
                   <button type="button" className="px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700" onClick={() => document.getElementById('photo').click()}>Browse photo</button>
                   <span className="text-xs text-gray-500">Or</span>
                   <p className="text-sm text-gray-500">Drag or Drop Here</p>
+                  </div>
                 </div>
-              </div>
               <div className="flex gap-3 mt-6">
                 <button type="submit" className="bg-blue-600 text-white px-5 py-2.5 rounded-full text-sm font-medium">Add</button>
                 <button type="button" className="bg-gray-100 text-gray-700 px-5 py-2.5 rounded-full text-sm font-medium hover:bg-gray-200" onClick={handleCloseModal}>Cancel</button>

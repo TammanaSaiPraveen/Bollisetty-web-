@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import fullLogo from '../assets/Images/fulllogo.png';
 import apImage from '../assets/Images/AP.png';
+import filterIcon from '../assets/icons/filter.png'
 
 const Schedule = () => {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
@@ -24,6 +25,15 @@ const Schedule = () => {
     reason: '',
     photo: null
   });
+  const [todaySchedules, setTodaySchedules] = useState([
+    {title:'Meet at CM Camp Office', loc:'Location: Velangapudi, Amaravathi, AP', time:'Time:09:00 AM - 12:00PM'},
+    {title:'Farmers', time:'Time:09:00 AM - 12:00PM'},
+    {title:'Farmers', time:'Time:09:00 AM - 12:00PM'},
+  ]);
+  const [yesterdaySchedules] = useState([
+    {title:'Meet at CM Camp Office', loc:'Location: Velangapudi, Amaravathi, AP', time:'Time:09:00 AM - 12:00PM'},
+    {title:'Farmers', time:'Time:09:00 AM - 12:00PM'},
+  ]);
   
   const profileRef = useRef(null);
 
@@ -51,10 +61,17 @@ const Schedule = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Schedule data:', formData);
+    // Add to Today's Schedule immediately
+    const newItem = {
+      title: formData.reason || 'Scheduled Event',
+      loc: formData.location ? `Location: ${formData.location}` : undefined,
+      time: formData.time ? `Time:${formData.time}` : 'Time:TBD'
+    };
+    setTodaySchedules((prev) => [newItem, ...prev]);
     setShowAddScheduleModal(false);
     setShowSuccessModal(true);
-    setTimeout(() => setShowSuccessModal(false), 3000);
+    setTimeout(() => setShowSuccessModal(false), 2000);
+    setFormData({ date: '', time: '', location: '', reason: '', photo: null });
   };
 
   // Close dropdown when clicking outside
@@ -88,11 +105,21 @@ const Schedule = () => {
           <div className="w-10 h-10 flex items-center justify-center text-gray-800 cursor-pointer rounded-md transition relative hover:bg-white/10" onClick={toggleProfileDropdown} ref={profileRef}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             {showProfileDropdown && (
-              <div className="absolute top-full right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-[1000] mt-2 min-w-40 overflow-hidden">
-                <div className="flex items-center gap-3 px-4 py-3 text-gray-700 cursor-pointer text-sm font-medium hover:bg-gray-100">
+              <div className="absolute top-full right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-[1000] mt-2 min-w-48 overflow-hidden">
+                <Link to="/profile" className="flex items-center gap-3 px-4 py-3 text-gray-700 cursor-pointer text-sm font-medium hover:bg-gray-100">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                   <span>My Profile</span>
-          </div>
+                </Link>
+                <Link to="/posts" className="flex items-center gap-3 px-4 py-3 text-gray-700 cursor-pointer text-sm font-medium hover:bg-gray-100">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14,2 14,8 20,8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10,9 9,9 8,9"></polyline>
+            </svg>
+                  <span>My Posts</span>
+                </Link>
                 <div className="flex items-center gap-3 px-4 py-3 text-gray-700 cursor-pointer text-sm font-medium hover:bg-gray-100">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                   <span>Settings</span>
@@ -176,12 +203,12 @@ const Schedule = () => {
           {/* Search and Filter */}
         <div className="mb-6">
           <div className="flex items-center gap-3 relative">
-            <div className="flex items-center rounded-md px-3 py-2 transition overflow-hidden shadow-sm" style={{ width: '320px', backgroundColor: 'rgba(255,255,255,0.6)', border: '1px solid rgba(209,213,219,0.6)' }}>
+            <div className="flex items-center rounded-md px-3 py-2 transition overflow-hidden shadow-sm bg-white border border-gray-300" style={{ width: '320px' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500 mr-2 shrink-0"><circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.35-4.35"></path></svg>
               <input type="text" placeholder="Search" value={searchTerm} onChange={(e)=>setSearchTerm(e.target.value)} className="border-0 outline-none text-sm text-gray-700 bg-transparent w-full placeholder:text-gray-400" />
             </div>
             <button type="button" onClick={()=>setShowFilter((s)=>!s)} className="w-10 h-10 flex items-center justify-center rounded-md cursor-pointer hover:bg-white/90 shadow-sm" style={{ backgroundColor: 'rgba(255,255,255,0.6)', border: '1px solid rgba(209,213,219,0.6)' }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"></polygon></svg>
+              <img src={filterIcon} alt="Filter" className="w-10 h-10" />
             </button>
 
             {showFilter && (
@@ -242,29 +269,29 @@ const Schedule = () => {
         <div className="mb-8 rounded-xl border shadow-lg" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>
           <div className="px-4 py-3 border-b border-gray-200"><h2 className="text-xl font-bold text-gray-800 m-0">Today's Schedule</h2></div>
           <div className="flex flex-col gap-3 p-4">
-            {[{title:'Meet at CM Camp Office', loc:'Location: Velangapudi, Amaravathi, AP', time:'Time:09:00 AM - 12:00PM'}, {title:'Farmers', time:'Time:09:00 AM - 12:00PM'}, {title:'Farmers', time:'Time:09:00 AM - 12:00PM'}].map((it, idx) => (
+            {todaySchedules.map((it, idx) => (
               <div key={idx} className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
                 <h3 className="text-base font-semibold text-gray-800 m-0 mb-1">{it.title}</h3>
                 {it.loc && <p className="text-sm text-gray-500 m-0 mb-1">{it.loc}</p>}
                 <p className="text-sm text-gray-500 m-0">{it.time}</p>
-                </div>
+              </div>
             ))}
-            </div>
           </div>
+        </div>
 
-          {/* Yesterday Schedule */}
+        {/* Yesterday Schedule */}
         <div className="mb-8 rounded-xl border shadow-lg" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>
           <div className="px-4 py-3 border-b border-gray-200"><h2 className="text-xl font-bold text-gray-800 m-0">Yesterday Schedule</h2></div>
           <div className="flex flex-col gap-3 p-4">
-            {[{title:'Meet at CM Camp Office', loc:'Location: Velangapudi, Amaravathi, AP', time:'Time:09:00 AM - 12:00PM'}, {title:'Farmers', time:'Time:09:00 AM - 12:00PM'}].map((it, idx) => (
+            {yesterdaySchedules.map((it, idx) => (
               <div key={idx} className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
                 <h3 className="text-base font-semibold text-gray-800 m-0 mb-1">{it.title}</h3>
                 {it.loc && <p className="text-sm text-gray-500 m-0 mb-1">{it.loc}</p>}
                 <p className="text-sm text-gray-500 m-0">{it.time}</p>
-                </div>
+              </div>
             ))}
-            </div>
           </div>
+        </div>
         </main>
 
         {/* Add Schedule Modal */}
@@ -282,8 +309,8 @@ const Schedule = () => {
                   <div className="relative">
                     <input type="text" id="date" name="date" value={formData.date} onChange={handleInputChange} placeholder="DD-MM-YYYY" required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700 pr-9" />
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                  </div>
                 </div>
+              </div>
                 <div>
                   <label htmlFor="time" className="block text-xs font-medium text-gray-600 mb-1">Time</label>
                   <input type="text" id="time" name="time" value={formData.time} onChange={handleInputChange} placeholder="HH:MM:SS" required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" />
@@ -291,11 +318,11 @@ const Schedule = () => {
                 <div className="sm:col-span-2">
                   <label htmlFor="location" className="block text-xs font-medium text-gray-600 mb-1">Location</label>
                   <input type="text" id="location" name="location" value={formData.location} onChange={handleInputChange} placeholder="Street, City, Pin" required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" />
-                </div>
+              </div>
                 <div className="sm:col-span-2">
                   <label htmlFor="reason" className="block text-xs font-medium text-gray-600 mb-1">Reason</label>
                   <input id="reason" name="reason" value={formData.reason} onChange={handleInputChange} placeholder="Detailed Description....." required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" />
-                </div>
+              </div>
               </div>
               <div className="mt-4">
                 <label className="block text-xs font-medium text-gray-600 mb-1">Upload Photo</label>
@@ -304,8 +331,8 @@ const Schedule = () => {
                   <button type="button" className="px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700" onClick={() => document.getElementById('photo').click()}>Browse photo</button>
                   <span className="text-xs text-gray-500">Or</span>
                   <p className="text-sm text-gray-500">Drag or Drop Here</p>
+                  </div>
                 </div>
-              </div>
               <div className="flex gap-3 mt-6">
                 <button type="submit" className="bg-blue-600 text-white px-5 py-2.5 rounded-full text-sm font-medium">+ Add</button>
                 <button type="button" className="bg-gray-100 text-gray-700 px-5 py-2.5 rounded-full text-sm font-medium hover:bg-gray-200" onClick={handleCloseModal}>Cancel</button>

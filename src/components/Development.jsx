@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import fullLogo from '../assets/Images/fulllogo.png';
 import apImage from '../assets/Images/AP.png';
+import filterIcon from '../assets/icons/filter.png'
 
 const Development = () => {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [planExpanded, setPlanExpanded] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showAddProjectsModal, setShowAddProjectsModal] = useState(false);
   const [showCompletedProjects, setShowCompletedProjects] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -19,6 +21,33 @@ const Development = () => {
   const [selectedDates, setSelectedDates] = useState([]);
   const [selectedStatuses, setSelectedStatuses] = useState([]);
   const [selectedLocations, setSelectedLocations] = useState([]);
+  const profileRef = useRef(null);
+
+  const toggleSidebar = () => {
+    setSidebarExpanded(!sidebarExpanded);
+  };
+
+  const togglePlanSubmenu = () => {
+    setPlanExpanded(!planExpanded);
+  };
+
+  const toggleProfileDropdown = () => {
+    setShowProfileDropdown(!showProfileDropdown);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setShowProfileDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const PIE_COLORS = { current: '#6D28D9', ongoing: '#F97316', completed: '#22D3EE' };
 
@@ -80,14 +109,42 @@ const Development = () => {
     </div>
   );
   const [formData, setFormData] = useState({ launchDate: '', launchTime: '', title: '', description: '', photo: null });
+  const [projects, setProjects] = useState({
+    current: [
+      { t: 'Water Supply Disruption', loc: 'Ganeshnagar, Tadepalligudem', time: 'Time: 09:00 AM', status: 'Current' },
+      { t: 'Farmers', loc: '', time: 'Time: 09:00 AM - 12:00PM', status: 'Current' },
+      { t: 'Farmers', loc: '', time: 'Time: 09:00 AM - 12:00PM', status: 'Current' },
+    ],
+    completed: [
+      { t: 'Street Lights Upgrade', loc: 'Ward-12', time: 'Completed: 02:30 PM', status: 'Completed' },
+      { t: 'Drainage Clean-up', loc: 'Market Road', time: 'Completed: 11:10 AM', status: 'Completed' },
+    ],
+    proposed: [
+      { t: 'New Community Center', loc: 'Central Area', time: 'Proposed: Q2 2024', status: 'Proposed' },
+      { t: 'Road Widening Project', loc: 'Main Highway', time: 'Proposed: Q3 2024', status: 'Proposed' },
+      { t: 'Digital Library Setup', loc: 'Educational Zone', time: 'Proposed: Q4 2024', status: 'Proposed' },
+    ]
+  });
 
-  const toggleSidebar = () => setSidebarExpanded(!sidebarExpanded);
-  const togglePlanSubmenu = () => setPlanExpanded(!planExpanded);
   const handleAddProjects = () => setShowAddProjectsModal(true);
   const handleCloseModal = () => { setShowAddProjectsModal(false); setShowSuccessModal(false); setFormData({ launchDate: '', launchTime: '', title: '', description: '', photo: null }); };
   const handleInputChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   const handleFileChange = (e) => setFormData(prev => ({ ...prev, photo: e.target.files[0] }));
-  const handleSubmit = (e) => { e.preventDefault(); console.log('Project data:', formData); setShowAddProjectsModal(false); setShowSuccessModal(true); setTimeout(() => setShowSuccessModal(false), 3000); };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const type = selectedProjectType; // current/completed/proposed
+    const newItem = {
+      t: formData.title || 'New Project',
+      loc: formData.description ? formData.description : '',
+      time: type === 'completed' ? `Completed: ${formData.launchTime || 'TBD'}` : type === 'proposed' ? `Proposed: ${formData.launchTime || 'TBD'}` : `Time: ${formData.launchTime || 'TBD'}`,
+      status: type === 'completed' ? 'Completed' : type === 'proposed' ? 'Proposed' : 'Current'
+    };
+    setProjects(prev => ({ ...prev, [type]: [newItem, ...(prev[type] || [])] }));
+    setShowAddProjectsModal(false);
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 2000);
+    setFormData({ launchDate: '', launchTime: '', title: '', description: '', photo: null });
+  };
   const toggleProjectsView = () => setShowCompletedProjects(prev => !prev);
   const toggleDropdown = () => setShowDropdown(!showDropdown);
   const selectProjectType = (type) => { setSelectedProjectType(type); setShowDropdown(false); setShowCompletedProjects(type === 'completed'); };
@@ -98,15 +155,61 @@ const Development = () => {
   return (
     <div className="min-h-screen bg-[#f5f5f5] font-[Inter,Segoe_UI,Tahoma,Geneva,Verdana,sans-serif]">
       {/* Header/Navbar */}
-      <header className="fixed top-0 right-0 h-[60px] flex items-center justify-between px-6 bg-white/80 shadow z-[1000] transition-all" style={{ left: sidebarWidthPx }}>
-        <div className="flex items-center gap-4"><img src={fullLogo} alt="Logo" className="w-[200px] h-auto object-contain" /></div>
+      <header
+        className="fixed top-0 right-0 h-[60px] flex items-center justify-between px-6 bg-white/80 shadow z-[1000] transition-all"
+        style={{ left: sidebarWidthPx }}
+      >
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4">
+            <img src={fullLogo} alt="Logo" className="w-[200px] h-auto object-contain" />
+          </div>
+        </div>
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 flex items-center justify-center text-gray-800 cursor-pointer rounded-md transition relative hover:bg-white/10">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path>
+            </svg>
             <div className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white/80"></div>
           </div>
-          <div className="w-10 h-10 flex items-center justify-center text-gray-800 cursor-pointer rounded-md transition relative hover:bg-white/10">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <div
+            className="w-10 h-10 flex items-center justify-center text-gray-800 cursor-pointer rounded-md transition relative hover:bg-white/10"
+            onClick={toggleProfileDropdown}
+            ref={profileRef}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            {showProfileDropdown && (
+              <div className="absolute top-full right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-[1000] mt-2 min-w-48 overflow-hidden">
+                <Link to="/profile" className="flex items-center gap-3 px-4 py-3 text-gray-700 cursor-pointer text-sm font-medium hover:bg-gray-100">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  <span>My Profile</span>
+          </Link>
+                <Link to="/posts" className="flex items-center gap-3 px-4 py-3 text-gray-700 cursor-pointer text-sm font-medium hover:bg-gray-100">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14,2 14,8 20,8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10,9 9,9 8,9"></polyline>
+            </svg>
+                  <span>My Posts</span>
+          </Link>
+                <div className="flex items-center gap-3 px-4 py-3 text-gray-700 cursor-pointer text-sm font-medium hover:bg-gray-100">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+                  <span>Settings</span>
+          </div>
+            </div>
+          )}
           </div>
         </div>
       </header>
@@ -138,12 +241,12 @@ const Development = () => {
         {/* Search and Filter */}
         <div className="mb-6">
           <div className="flex items-center gap-3 relative">
-            <div className="flex items-center rounded-md px-3 py-2 transition overflow-hidden shadow-sm" style={{ width: '320px', backgroundColor: 'rgba(255,255,255,0.6)', border: '1px solid rgba(209,213,219,0.6)' }}>
+            <div className="flex items-center rounded-md px-3 py-2 transition overflow-hidden shadow-sm bg-white border border-gray-300" style={{ width: '320px' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500 mr-2 shrink-0"><circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.35-4.35"></path></svg>
               <input type="text" placeholder="Search" value={searchTerm} onChange={(e)=>setSearchTerm(e.target.value)} className="border-0 outline-none text-sm text-gray-700 bg-transparent w-full placeholder:text-gray-400" />
             </div>
             <button type="button" onClick={()=>setShowFilter((s)=>!s)} className="w-10 h-10 flex items-center justify-center rounded-md cursor-pointer hover:bg-white/90 shadow-sm" style={{ backgroundColor: 'rgba(255,255,255,0.6)', border: '1px solid rgba(209,213,219,0.6)' }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"></polygon></svg>
+              <img src={filterIcon} alt="Filter" className="w-10 h-10" />
             </button>
 
             {showFilter && (
@@ -244,22 +347,11 @@ const Development = () => {
             {(() => {
               let items = [];
               if (selectedProjectType === 'completed') {
-                items = [
-                  { t: 'Street Lights Upgrade', loc: 'Ward-12', time: 'Completed: 02:30 PM', status: 'Completed' },
-                  { t: 'Drainage Clean-up', loc: 'Market Road', time: 'Completed: 11:10 AM', status: 'Completed' },
-                ];
+                items = projects.completed;
               } else if (selectedProjectType === 'proposed') {
-                items = [
-                  { t: 'New Community Center', loc: 'Central Area', time: 'Proposed: Q2 2024', status: 'Proposed' },
-                  { t: 'Road Widening Project', loc: 'Main Highway', time: 'Proposed: Q3 2024', status: 'Proposed' },
-                  { t: 'Digital Library Setup', loc: 'Educational Zone', time: 'Proposed: Q4 2024', status: 'Proposed' },
-                ];
+                items = projects.proposed;
               } else {
-                items = [
-                  { t: 'Water Supply Disruption', loc: 'Ganeshnagar, Tadepalligudem', time: 'Time: 09:00 AM', status: 'Current' },
-                  { t: 'Farmers', loc: '', time: 'Time: 09:00 AM - 12:00PM', status: 'Current' },
-                  { t: 'Farmers', loc: '', time: 'Time: 09:00 AM - 12:00PM', status: 'Current' },
-                ];
+                items = projects.current;
               }
 
               const matches = (it) => {

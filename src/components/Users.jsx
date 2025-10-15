@@ -3,6 +3,7 @@ import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import fullLogo from '../assets/Images/fulllogo.png';
 import apImage from '../assets/Images/AP.png';
+import filterIcon from '../assets/icons/filter.png'
 
 const Users = () => {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
@@ -16,6 +17,8 @@ const Users = () => {
   const [showDeptOptions, setShowDeptOptions] = useState(false);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showEditUserModal, setShowEditUserModal] = useState(false);
+  const [editIndex, setEditIndex] = useState(-1);
   const [formData, setFormData] = useState({
     name: '',
     role: '',
@@ -23,6 +26,17 @@ const Users = () => {
     address: '',
     department: ''
   });
+  const [editFormData, setEditFormData] = useState({ id: '', name: '', role: '', email: '', department: '' });
+  const [users, setUsers] = useState([
+    ['GV101','Surya','surya@gmail.com','Electricity','Lineman'],
+    ['user2101','Anil','anil@gmail.com','Water','Incharge'],
+    ['user2102','Manohar','manohar@gmail.com','Road','Safety Checker'],
+    ['user2103','Revanth','revanth@gmail.com','Electricity','Lineman'],
+    ['user2104','Poorna','poorna@gmail.com','Water','Supplier'],
+    ['GV101','Karthik','karthik@gmail.com','Road','Safety checker'],
+    ['GV101','Praveen','praveen@gmail.com','Water','Supplier'],
+    ['GV101','Surya','surya@gmail.com','Electricity','Lineman'],
+  ]);
   const profileRef = useRef(null);
 
   const toggleSidebar = () => {
@@ -61,10 +75,40 @@ const Users = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('User data:', formData);
+    // Create a new user row and prepend to list
+    const newId = `user${Math.floor(1000 + Math.random()*9000)}`;
+    const newRow = [newId, formData.name, formData.email, formData.department, formData.role];
+    setUsers(prev => [newRow, ...prev]);
     setShowAddUserModal(false);
     setShowSuccessModal(true);
     setTimeout(() => setShowSuccessModal(false), 3000);
+    setFormData({ name: '', role: '', email: '', address: '', department: '' });
+  };
+
+  const openEditModalForRow = (row) => {
+    const idx = users.indexOf(row);
+    if (idx === -1) return;
+    setEditIndex(idx);
+    setEditFormData({ id: users[idx][0], name: users[idx][1], email: users[idx][2], department: users[idx][3], role: users[idx][4] });
+    setShowEditUserModal(true);
+  };
+
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditSubmit = (e) => {
+    e.preventDefault();
+    setUsers((prev) => prev.map((u, i) => i === editIndex ? [editFormData.id, editFormData.name, editFormData.email, editFormData.department, editFormData.role] : u));
+    setShowEditUserModal(false);
+    setEditIndex(-1);
+  };
+
+  const handleDeleteRow = (row) => {
+    const idx = users.indexOf(row);
+    if (idx === -1) return;
+    setUsers((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const handleCloseModal = () => {
@@ -77,18 +121,9 @@ const Users = () => {
   const sidebarWidthPx = sidebarExpanded ? 200 : 60;
 
   // Static users list (could be replaced by API later)
-  const usersData = [
-    ['GV101','Surya','surya@gmail.com','Electricity','Lineman'],
-    ['user2101','Anil','anil@gmail.com','Water','Incharge'],
-    ['user2102','Manohar','manohar@gmail.com','Road','Safety Checker'],
-    ['user2103','Revanth','revanth@gmail.com','Electricity','Lineman'],
-    ['user2104','Poorna','poorna@gmail.com','Water','Supplier'],
-    ['GV101','Karthik','karthik@gmail.com','Road','Safety checker'],
-    ['GV101','Praveen','praveen@gmail.com','Water','Supplier'],
-    ['GV101','Surya','surya@gmail.com','Electricity','Lineman'],
-  ];
+  // const usersData = [...]
 
-  const filteredUsers = usersData.filter((row) => {
+  const filteredUsers = users.filter((row) => {
     const department = row[3];
     const role = row[4];
     const deptMatch = selectedDepartments.length === 0 || selectedDepartments.includes(department);
@@ -126,14 +161,24 @@ const Users = () => {
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
             {showProfileDropdown && (
-              <div className="absolute top-full right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-[1000] mt-2 min-w-40 overflow-hidden">
-                <div className="flex items-center gap-3 px-4 py-3 text-gray-700 cursor-pointer text-sm font-medium hover:bg-gray-100">
+              <div className="absolute top-full right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-[1000] mt-2 min-w-48 overflow-hidden">
+                <Link to="/profile" className="flex items-center gap-3 px-4 py-3 text-gray-700 cursor-pointer text-sm font-medium hover:bg-gray-100">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                   </svg>
                   <span>My Profile</span>
-                </div>
+                </Link>
+                <Link to="/posts" className="flex items-center gap-3 px-4 py-3 text-gray-700 cursor-pointer text-sm font-medium hover:bg-gray-100">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14,2 14,8 20,8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10,9 9,9 8,9"></polyline>
+                  </svg>
+                  <span>My Posts</span>
+                </Link>
                 <div className="flex items-center gap-3 px-4 py-3 text-gray-700 cursor-pointer text-sm font-medium hover:bg-gray-100">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500">
                     <circle cx="12" cy="12" r="3"></circle>
@@ -269,12 +314,12 @@ const Users = () => {
         {/* Search and Filter */}
         <div className="mb-6">
           <div className="flex items-center gap-3 relative">
-            <div className="flex items-center rounded-md px-3 py-2 transition overflow-hidden shadow-sm" style={{ width: '320px', backgroundColor: 'rgba(255,255,255,0.6)', border: '1px solid rgba(209,213,219,0.6)' }}>
+            <div className="flex items-center rounded-md px-3 py-2 transition overflow-hidden shadow-sm bg-white border border-gray-300" style={{ width: '320px' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500 mr-2 shrink-0"><circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.35-4.35"></path></svg>
               <input type="text" placeholder="Search" className="border-0 outline-none text-sm text-gray-700 bg-transparent w-full placeholder:text-gray-400" />
             </div>
-            <button type="button" aria-label="Filter" onClick={() => setShowFilter((s) => !s)} className="w-10 h-10 flex items-center justify-center rounded-md cursor-pointer hover:bg-white/90 shadow-sm" style={{ backgroundColor: 'rgba(255,255,255,0.6)', border: '1px solid rgba(209,213,219,0.6)' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+            <button type="button" onClick={()=>setShowFilter((s)=>!s)} className="w-10 h-10 flex items-center justify-center rounded-md cursor-pointer hover:bg-white/90 shadow-sm" style={{ backgroundColor: 'rgba(255,255,255,0.6)', border: '1px solid rgba(209,213,219,0.6)' }}>
+              <img src={filterIcon} alt="Filter" className="w-10 h-10" />
             </button>
 
             {showFilter && (
@@ -349,8 +394,8 @@ const Users = () => {
                     ))}
                     <td className="px-4 py-3 text-right w-24 border-b border-gray-100" style={{ backgroundColor: 'rgba(255,255,255,0.6)' }}>
                       <div className="flex gap-2 justify-end">
-                        <button className="w-8 h-8 rounded bg-blue-100 text-blue-500 flex items-center justify-center hover:bg-blue-200" aria-label="Edit"><FiEdit2 size={16} /></button>
-                        <button className="w-8 h-8 rounded bg-red-100 text-red-500 flex items-center justify-center hover:bg-red-200" aria-label="Delete"><FiTrash2 size={16} /></button>
+                        <button className="w-8 h-8 rounded bg-blue-100 text-blue-500 flex items-center justify-center hover:bg-blue-200" aria-label="Edit" onClick={() => openEditModalForRow(row)}><FiEdit2 size={16} /></button>
+                        <button className="w-8 h-8 rounded bg-red-100 text-red-500 flex items-center justify-center hover:bg-red-200" aria-label="Delete" onClick={() => handleDeleteRow(row)}><FiTrash2 size={16} /></button>
                     </div>
                   </td>
                 </tr>
@@ -360,6 +405,51 @@ const Users = () => {
           </div>
         </div>
       </main>
+
+      {/* Edit User Modal */}
+      {showEditUserModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000]" onClick={() => setShowEditUserModal(false)}>
+          <div className="bg-white rounded-lg w-[90%] max-w-[500px] max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-800 m-0">Edit User</h2>
+              <button className="p-2 rounded text-gray-500 hover:bg-gray-100" onClick={() => setShowEditUserModal(false)}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+            <form onSubmit={handleEditSubmit} className="px-6 py-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">User ID</label>
+                  <input value={editFormData.id} disabled className="w-full px-3 py-3 border border-gray-200 rounded-md text-sm text-gray-500 bg-gray-50" />
+                </div>
+                <div>
+                  <label htmlFor="edit_name" className="block text-xs font-medium text-gray-600 mb-1">Name</label>
+                  <input id="edit_name" name="name" value={editFormData.name} onChange={handleEditInputChange} required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" />
+                </div>
+                <div>
+                  <label htmlFor="edit_role" className="block text-xs font-medium text-gray-600 mb-1">Role</label>
+                  <input id="edit_role" name="role" value={editFormData.role} onChange={handleEditInputChange} required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" />
+                </div>
+                <div className="sm:col-span-2">
+                  <label htmlFor="edit_email" className="block text-xs font-medium text-gray-600 mb-1">Email</label>
+                  <input type="email" id="edit_email" name="email" value={editFormData.email} onChange={handleEditInputChange} required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" />
+                </div>
+                <div className="sm:col-span-2">
+                  <label htmlFor="edit_department" className="block text-xs font-medium text-gray-600 mb-1">Department</label>
+                  <input id="edit_department" name="department" value={editFormData.department} onChange={handleEditInputChange} required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" />
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button type="submit" className="bg-blue-600 text-white px-5 py-2.5 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-blue-700">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20,6 9,17 4,12"></polyline></svg>
+                  Save Changes
+                </button>
+                <button type="button" className="bg-gray-100 text-gray-700 px-5 py-2.5 rounded-full text-sm font-medium hover:bg-gray-200" onClick={() => setShowEditUserModal(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Add User Modal */}
       {showAddUserModal && (
