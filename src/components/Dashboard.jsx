@@ -15,6 +15,8 @@ const Dashboard = () => {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const profileRef = useRef(null);
 
+  
+
   const toggleSidebar = () => {
     setSidebarExpanded(!sidebarExpanded);
   };

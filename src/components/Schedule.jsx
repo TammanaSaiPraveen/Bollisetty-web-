@@ -307,13 +307,14 @@ const Schedule = () => {
                 <div>
                   <label htmlFor="date" className="block text-xs font-medium text-gray-600 mb-1">Date</label>
                   <div className="relative">
-                    <input type="text" id="date" name="date" value={formData.date} onChange={handleInputChange} placeholder="DD-MM-YYYY" required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700 pr-9" />
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <input type="date" id="date" name="date" value={formData.date} onChange={handleInputChange} required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" />
+                  </div>
                 </div>
-              </div>
                 <div>
                   <label htmlFor="time" className="block text-xs font-medium text-gray-600 mb-1">Time</label>
-                  <input type="text" id="time" name="time" value={formData.time} onChange={handleInputChange} placeholder="HH:MM:SS" required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" />
+                  <div className="relative">
+                    <input type="time" id="time" name="time" value={formData.time} onChange={handleInputChange} required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" />
+                  </div>
                 </div>
                 <div className="sm:col-span-2">
                   <label htmlFor="location" className="block text-xs font-medium text-gray-600 mb-1">Location</label>
@@ -345,13 +346,18 @@ const Schedule = () => {
       {/* Success Modal */}
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[1000]" onClick={handleCloseModal}>
-          <div className="bg-white rounded-lg p-8 text-center shadow-2xl relative" onClick={(e) => e.stopPropagation()}>
-            <button className="absolute top-3 right-3 p-2 rounded text-gray-500 hover:bg-gray-100" onClick={handleCloseModal}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-            <div className="flex flex-col items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-emerald-100 text-emerald-600">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20,6 9,17 4,12"></polyline></svg>
+          <div className="bg-white rounded-xl p-12 text-center shadow-2xl relative w-96 max-w-[90vw]" onClick={(e) => e.stopPropagation()}>
+            <button className="absolute top-4 right-4 p-2 rounded-full text-gray-500 hover:bg-gray-100 transition-colors" onClick={handleCloseModal}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <div className="flex flex-col items-center gap-6">
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20,6 9,17 4,12"></polyline></svg>
               </div>
-              <p className="text-emerald-600 text-base m-0">Schedule Added Successfully</p>
+              <div className="text-center">
+                <h3 className="text-emerald-600 text-xl font-semibold mb-2">Schedule Added Successfully</h3>
+                <p className="text-gray-600 text-sm">The schedule has been created and saved</p>
+              </div>
             </div>
           </div>
         </div>

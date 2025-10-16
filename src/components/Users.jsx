@@ -106,9 +106,15 @@ const Users = () => {
   };
 
   const handleDeleteRow = (row) => {
-    const idx = users.indexOf(row);
-    if (idx === -1) return;
-    setUsers((prev) => prev.filter((_, i) => i !== idx));
+    const userName = row[1]; // Get the user's name
+    const confirmed = window.confirm(`Are you sure you want to delete ${userName}?`);
+    
+    if (confirmed) {
+      const idx = users.indexOf(row);
+      if (idx !== -1) {
+        setUsers((prev) => prev.filter((_, i) => i !== idx));
+      }
+    }
   };
 
   const handleCloseModal = () => {
@@ -496,22 +502,25 @@ const Users = () => {
         </div>
       )}
 
-      {/* Success Modal */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[1000]" onClick={() => setShowSuccessModal(false)}>
-          <div className="bg-white rounded-lg p-8 text-center shadow-2xl relative" onClick={(e) => e.stopPropagation()}>
-            <button className="absolute top-3 right-3 p-2 rounded text-gray-500 hover:bg-gray-100" onClick={() => setShowSuccessModal(false)}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
-            <div className="flex flex-col items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-emerald-100 text-emerald-600">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20,6 9,17 4,12"></polyline></svg>
-              </div>
-              <p className="text-emerald-600 text-base m-0">User Added Successfully</p>
-            </div>
-          </div>
-        </div>
-      )}
+       {/* Success Modal */}
+       {showSuccessModal && (
+         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[1000]" onClick={() => setShowSuccessModal(false)}>
+           <div className="bg-white rounded-xl p-12 text-center shadow-2xl relative w-96 max-w-[90vw]" onClick={(e) => e.stopPropagation()}>
+             <button className="absolute top-4 right-4 p-2 rounded-full text-gray-500 hover:bg-gray-100 transition-colors" onClick={() => setShowSuccessModal(false)}>
+               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+             </button>
+             <div className="flex flex-col items-center gap-6">
+               <div className="flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600">
+                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20,6 9,17 4,12"></polyline></svg>
+               </div>
+               <div className="text-center">
+                 <h3 className="text-emerald-600 text-xl font-semibold mb-2">User Added Successfully</h3>
+                 <p className="text-gray-600 text-sm">The user has been added to the system</p>
+               </div>
+             </div>
+           </div>
+         </div>
+       )}
     </div>
   );
 };
