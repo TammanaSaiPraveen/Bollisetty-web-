@@ -4,8 +4,7 @@ import logoImage from '../assets/Images/Authoritative Government Service App Log
 import bjpImage from '../assets/Images/BJP.png';
 import janasenaImage from '../assets/Images/Janasena.jpg';
 import tdpImage from '../assets/Images/TDP.jpg';
-import VoterIdInput from './VoterIdInput';
-import { isAuthenticated } from '../utils/auth';
+import { isAuthenticated, registerUser } from '../utils/auth';
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -13,18 +12,14 @@ const SignUp = () => {
     firstName: '',
     lastName: '',
     email: '',
-    phoneNumber: '',
-    voterId: '',
+    password: '',
+    confirmPassword: '',
     agreeToTerms: false
   });
 
-  // OTP auth states
-  const [step, setStep] = useState(1); // 1: details + send OTP, 2: verify OTP
-  const [otpData, setOtpData] = useState({ otp: '' });
-  const [otpTimer, setOtpTimer] = useState(60);
+  // Authentication states
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [voterIdValidation, setVoterIdValidation] = useState({ isValid: null, message: '' });
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const images = [bjpImage, janasenaImage, tdpImage];
@@ -43,15 +38,6 @@ const SignUp = () => {
     }
   }, [navigate]);
 
-  // OTP timer
-  useEffect(() => {
-    let timer;
-    if (step === 2 && otpTimer > 0) {
-      timer = setInterval(() => setOtpTimer((t) => t - 1), 1000);
-    }
-    return () => clearInterval(timer);
-  }, [step, otpTimer]);
-
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -60,54 +46,20 @@ const SignUp = () => {
     }));
   };
 
-  // API calls
-  const sendOTP = async (phoneNumber, voterId) => {
+  // API call to register user
+  const handleRegister = async (userData) => {
     try {
       setIsLoading(true);
       setError('');
-      const response = await fetch('/api/auth/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber, voterId })
-      });
-      if (response.ok) {
-        await response.text();
-        setStep(2);
-        setOtpTimer(60);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.detail?.[0]?.msg || 'Failed to send OTP');
-      }
-    } catch (err) {
-      setError('Network error. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const verifyOTP = async (phoneNumber, otp, voterId) => {
-    try {
-      setIsLoading(true);
-      setError('');
-      const response = await fetch('/api/auth/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber, otp, voterId })
-      });
-      if (response.ok) {
-        const result = await response.json();
-        // store token
-        localStorage.setItem('access_token', result.access_token);
-        localStorage.setItem('token_type', result.token_type);
-        localStorage.setItem('expires_in', result.expires_in);
-        localStorage.setItem('login_time', Date.now().toString());
-        navigate('/dashboard');
-      } else {
-        const errorData = await response.json();
-        setError(errorData.detail?.[0]?.msg || 'Invalid OTP');
-      }
-    } catch (err) {
-      setError('Network error. Please try again.');
+      
+      const result = await registerUser(userData);
+      console.log('Registration successful:', result);
+      
+      // Navigate to dashboard on successful registration
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error registering user:', error);
+      setError(error.message || 'Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -117,36 +69,46 @@ const SignUp = () => {
     e.preventDefault();
     setError('');
 
-    if (step === 1) {
-      if (!formData.firstName || !formData.lastName || !formData.email || !formData.phoneNumber || !formData.voterId) {
-        setError('Please fill in all fields');
-        return;
-      }
-      const phoneRegex = /^[6-9]\d{9}$/;
-      if (!phoneRegex.test(formData.phoneNumber.replace(/\D/g, ''))) {
-        setError('Please enter a valid 10-digit phone number');
-        return;
-      }
-      if (voterIdValidation.isValid === false) {
-        setError(voterIdValidation.message || 'Invalid voter ID');
-        return;
-      }
-      if (!formData.agreeToTerms) {
-        setError('You must agree to the Terms and Conditions');
-        return;
-      }
-      await sendOTP(formData.phoneNumber, formData.voterId);
-    } else {
-      if (!otpData.otp) {
-        setError('Please enter the OTP');
-        return;
-      }
-      if (!/^\d{6}$/.test(otpData.otp)) {
-        setError('Please enter a valid 6-digit OTP');
-        return;
-      }
-      await verifyOTP(formData.phoneNumber, otpData.otp, formData.voterId);
+    // Validate all fields
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.confirmPassword) {
+      setError('Please fill in all fields');
+      return;
     }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    // Password validation
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
+    // Confirm password validation
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    // Terms agreement validation
+    if (!formData.agreeToTerms) {
+      setError('You must agree to the Terms and Conditions');
+      return;
+    }
+
+    // Prepare user data for registration
+    const userData = {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      password: formData.password
+    };
+
+    await handleRegister(userData);
   };
 
   return (
@@ -165,7 +127,7 @@ const SignUp = () => {
           {/* Sign Up Form */}
           <div className="w-full">
             <h1 className="text-[1.8rem] font-bold text-gray-900 m-0 mb-2 tracking-tight">Sign Up</h1>
-            <p className="text-[0.9rem] text-gray-500 m-0 mb-4">{step === 1 ? 'Enter your details to receive OTP' : 'Enter OTP to complete registration'}</p>
+            <p className="text-[0.9rem] text-gray-500 m-0 mb-4">Enter your details to create an account</p>
 
             {error && (
               <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-md">
@@ -174,8 +136,6 @@ const SignUp = () => {
             )}
 
             <form onSubmit={handleSubmit} className="w-full">
-              {step === 1 ? (
-              <>
               <div className="flex gap-3 mb-2.5">
                 <div className="flex-1">
                   <input
@@ -215,10 +175,10 @@ const SignUp = () => {
 
               <div className="mb-2.5">
                 <input
-                  type="tel"
-                  name="phoneNumber"
-                  placeholder="Phone Number"
-                  value={formData.phoneNumber}
+                  type="password"
+                  name="password"
+                  placeholder="Enter Password"
+                  value={formData.password}
                   onChange={handleChange}
                   className="w-full px-3.5 py-2.5 border border-gray-300 rounded-md text-[0.9rem] focus:outline-none focus:border-blue-500 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] bg-white text-gray-700 placeholder:text-gray-400"
                   required
@@ -226,12 +186,14 @@ const SignUp = () => {
               </div>
 
               <div className="mb-2.5">
-                <VoterIdInput
-                  value={formData.voterId}
-                  onChange={(e) => handleChange({ target: { name: 'voterId', value: e.target.value } })}
-                  placeholder="Enter Voter ID"
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  placeholder="Confirm Password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="w-full px-3.5 py-2.5 border border-gray-300 rounded-md text-[0.9rem] focus:outline-none focus:border-blue-500 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] bg-white text-gray-700 placeholder:text-gray-400"
                   required
-                  onValidationChange={setVoterIdValidation}
                 />
               </div>
 
@@ -250,29 +212,8 @@ const SignUp = () => {
               </div>
 
               <button type="submit" disabled={isLoading} className="w-full px-4 py-2.5 bg-blue-500 text-white rounded-md text-[0.95rem] font-semibold transition shadow-sm mb-2.5 hover:bg-blue-600 hover:shadow-[0_4px_12px_rgba(59,130,246,0.4)] disabled:opacity-50 disabled:cursor-not-allowed">
-                {isLoading ? 'Sending OTP...' : 'Send OTP'}
+                {isLoading ? 'Creating Account...' : 'Create Account'}
               </button>
-              </>
-              ) : (
-              <>
-                <div className="mb-3">
-                  <input
-                    type="text"
-                    name="otp"
-                    placeholder="Enter 6-digit OTP"
-                    value={otpData.otp}
-                    onChange={(e) => setOtpData({ otp: e.target.value })}
-                    maxLength="6"
-                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-md text-[1rem] text-center tracking-widest focus:outline-none focus:border-blue-500 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] bg-white text-gray-700 placeholder:text-gray-400"
-                    required
-                  />
-                </div>
-                <div className="mb-3 text-center text-xs text-gray-500">OTP valid for: {String(Math.floor(otpTimer / 60)).padStart(2, '0')}:{String(otpTimer % 60).padStart(2, '0')}</div>
-                <button type="submit" disabled={isLoading} className="w-full px-4 py-2.5 bg-blue-500 text-white rounded-md text-[0.95rem] font-semibold transition shadow-sm mb-2.5 hover:bg-blue-600 hover:shadow-[0_4px_12px_rgba(59,130,246,0.4)] disabled:opacity-50 disabled:cursor-not-allowed">
-                  {isLoading ? 'Verifying OTP...' : 'Verify OTP'}
-              </button>
-              </>
-              )}
 
               <div className="text-center mb-3">
                 <Link to="/login" className="text-blue-500 no-underline text-[0.9rem] font-medium hover:underline hover:text-blue-600">Already have an account? Login</Link>

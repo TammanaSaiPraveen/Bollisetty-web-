@@ -11,6 +11,10 @@ import Development from './components/Development'
 import Profile from './components/Profile'
 import Posts from './components/Posts'
 import Admin from './components/Admin'
+import Notifications from './components/Notifications'
+import Upload from './components/Upload'
+import Constituencies from './components/Constituencies'
+import Departments from './components/Departments'
 import { UserProvider } from './contexts/UserContext'
 import { isAuthenticated } from './utils/auth'
 import './App.css'
@@ -38,6 +42,10 @@ function App() {
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/posts" element={<ProtectedRoute><Posts /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+          <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+          <Route path="/upload" element={<ProtectedRoute><Upload /></ProtectedRoute>} />
+          <Route path="/constituencies" element={<ProtectedRoute><Constituencies /></ProtectedRoute>} />
+          <Route path="/departments" element={<ProtectedRoute><Departments /></ProtectedRoute>} />
         </Routes>
       </Router>
     </UserProvider>

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import fullLogo from '../assets/Images/fulllogo.png';
 import apImage from '../assets/Images/AP.png';
 import filterIcon from '../assets/icons/filter.png'
-import { getSchedules, createSchedule, getScheduleEvents, createScheduleEvent } from '../utils/auth';
+import { getSchedules, createSchedule, getScheduleEvents, createScheduleEvent, getScheduleEventById, updateScheduleEvent, deleteScheduleEvent, getUpcomingScheduleEvents } from '../utils/auth';
 
 const Schedule = () => {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
@@ -27,12 +27,33 @@ const Schedule = () => {
     photo: null
   });
   const [events, setEvents] = useState([]);
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [todaySchedules, setTodaySchedules] = useState([]);
   const [yesterdaySchedules, setYesterdaySchedules] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [eventsLoading, setEventsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showAddEventModal, setShowAddEventModal] = useState(false);
+  const [showEditEventModal, setShowEditEventModal] = useState(false);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [eventToDelete, setEventToDelete] = useState(null);
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [eventFormData, setEventFormData] = useState({
+    title: '',
+    description: '',
+    event_date: '',
+    event_time: '',
+    location: '',
+    event_type: 'meeting',
+    priority: 'medium',
+    photo: null
+  });
   const [skip, setSkip] = useState(0);
+  const [eventsSkip, setEventsSkip] = useState(0);
   const [limit, setLimit] = useState(25);
+  const [eventsLimit, setEventsLimit] = useState(25);
+  const [totalEvents, setTotalEvents] = useState(0);
+  const [activeTab, setActiveTab] = useState('schedules'); // 'schedules' or 'events'
   
   const profileRef = useRef(null);
 
@@ -41,11 +62,18 @@ const Schedule = () => {
   const toggleProfileDropdown = () => setShowProfileDropdown(!showProfileDropdown);
 
   const handleAddSchedule = () => setShowAddScheduleModal(true);
+  const handleAddEvent = () => setShowAddEventModal(true);
 
   const handleCloseModal = () => {
     setShowAddScheduleModal(false);
+    setShowAddEventModal(false);
+    setShowEditEventModal(false);
     setShowSuccessModal(false);
+    setShowDeleteConfirmModal(false);
     setFormData({ date: '', time: '', location: '', reason: '', photo: null });
+    setEventFormData({ title: '', description: '', event_date: '', event_time: '', location: '', event_type: 'meeting', priority: 'medium', photo: null });
+    setEditingEvent(null);
+    setEventToDelete(null);
   };
 
   const handleInputChange = (e) => {
@@ -53,9 +81,19 @@ const Schedule = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleEventInputChange = (e) => {
+    const { name, value } = e.target;
+    setEventFormData(prev => ({ ...prev, [name]: value }));
+  };
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     setFormData(prev => ({ ...prev, photo: file }));
+  };
+
+  const handleEventFileChange = (e) => {
+    const file = e.target.files[0];
+    setEventFormData(prev => ({ ...prev, photo: file }));
   };
 
   const handleSubmit = async (e) => {
@@ -136,14 +174,103 @@ const Schedule = () => {
   // Fetch schedule events (separate view/list)
   const fetchEvents = async () => {
     try {
-      const data = await getScheduleEvents({ skip, limit });
+      setEventsLoading(true);
+      const data = await getScheduleEvents({ skip: eventsSkip, limit: eventsLimit });
       const items = Array.isArray(data) ? data : data.items || [];
       setEvents(items);
+      setTotalEvents(data.total || items.length);
     } catch (err) {
-      // ignore optional errors here to keep page functional
+      setError(String(err.message || err));
+    } finally {
+      setEventsLoading(false);
     }
   };
-  useEffect(() => { fetchEvents(); /* eslint-disable-next-line */ }, [skip, limit]);
+
+  // Fetch upcoming events
+  const fetchUpcomingEvents = async () => {
+    try {
+      const data = await getUpcomingScheduleEvents({ days: 7 });
+      setUpcomingEvents(Array.isArray(data) ? data : data.items || []);
+    } catch (err) {
+      // ignore optional errors
+    }
+  };
+
+  // Event form submission
+  const handleEventSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setEventsLoading(true);
+      const payload = { ...eventFormData };
+      if (editingEvent) {
+        await updateScheduleEvent(editingEvent.id, payload);
+      } else {
+        await createScheduleEvent(payload);
+      }
+      setShowAddEventModal(false);
+      setShowEditEventModal(false);
+      setShowSuccessModal(true);
+      fetchEvents();
+      fetchUpcomingEvents();
+    } catch (err) {
+      setError(String(err.message || err));
+    } finally {
+      setEventsLoading(false);
+    }
+  };
+
+  // Edit event
+  const handleEditEvent = async (eventId) => {
+    try {
+      const event = await getScheduleEventById(eventId);
+      setEventFormData({
+        title: event.title || '',
+        description: event.description || '',
+        event_date: event.event_date || '',
+        event_time: event.event_time || '',
+        location: event.location || '',
+        event_type: event.event_type || 'meeting',
+        priority: event.priority || 'medium',
+        photo: null
+      });
+      setEditingEvent(event);
+      setShowEditEventModal(true);
+    } catch (err) {
+      setError(String(err.message || err));
+    }
+  };
+
+  // Delete event confirmation
+  const handleDeleteEvent = (event) => {
+    setEventToDelete(event);
+    setShowDeleteConfirmModal(true);
+  };
+
+  // Confirm delete event
+  const confirmDeleteEvent = async () => {
+    if (!eventToDelete) return;
+    try {
+      setEventsLoading(true);
+      await deleteScheduleEvent(eventToDelete.id);
+      setShowDeleteConfirmModal(false);
+      setShowSuccessModal(true);
+      fetchEvents();
+      fetchUpcomingEvents();
+    } catch (err) {
+      setError(String(err.message || err));
+    } finally {
+      setEventsLoading(false);
+    }
+  };
+
+  // Cancel delete
+  const cancelDelete = () => {
+    setShowDeleteConfirmModal(false);
+    setEventToDelete(null);
+  };
+
+  useEffect(() => { fetchEvents(); /* eslint-disable-next-line */ }, [eventsSkip, eventsLimit]);
+  useEffect(() => { fetchUpcomingEvents(); }, []);
 
   return (
     <div className="min-h-screen bg-[#f5f5f5] font-[Inter,Segoe_UI,Tahoma,Geneva,Verdana,sans-serif]">
@@ -250,13 +377,53 @@ const Schedule = () => {
           {/* Schedule Header */}
         <div className="mb-6"><h1 className="text-[1.75rem] font-bold text-gray-800 m-0">Schedule</h1></div>
 
-          {/* Schedule Actions */}
-        <div className="mb-6">
-          <button className="bg-blue-500 text-white border-0 px-6 py-3 rounded-md text-base font-medium cursor-pointer transition hover:bg-blue-600 flex items-center gap-2" onClick={handleAddSchedule}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          {/* Tab Navigation */}
+          <div className="mb-6">
+            <div className="flex space-x-1 bg-white/60 rounded-lg p-1 backdrop-blur-sm">
+              <button
+                onClick={() => setActiveTab('schedules')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === 'schedules'
+                    ? 'bg-blue-500 text-white'
+                    : 'text-gray-600 hover:text-gray-800'
+                }`}
+              >
+                Schedules
+              </button>
+              <button
+                onClick={() => setActiveTab('events')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === 'events'
+                    ? 'bg-blue-500 text-white'
+                    : 'text-gray-600 hover:text-gray-800'
+                }`}
+              >
+                Events
+              </button>
+            </div>
+          </div>
+
+          {/* Actions */}
+        <div className="mb-6 flex gap-3">
+          {activeTab === 'schedules' ? (
+            <button className="bg-blue-500 text-white border-0 px-6 py-3 rounded-md text-base font-medium cursor-pointer transition hover:bg-blue-600 flex items-center gap-2" onClick={handleAddSchedule}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
               Add Plan
             </button>
-          </div>
+          ) : (
+            <button className="bg-green-500 text-white border-0 px-6 py-3 rounded-md text-base font-medium cursor-pointer transition hover:bg-green-600 flex items-center gap-2" onClick={handleAddEvent}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              Add Event
+            </button>
+          )}
+          <button 
+            onClick={() => activeTab === 'schedules' ? fetchSchedules() : fetchEvents()}
+            className="bg-gray-500 text-white border-0 px-6 py-3 rounded-md text-base font-medium cursor-pointer transition hover:bg-gray-600 flex items-center gap-2"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M3 21v-5h5"></path></svg>
+            Refresh
+          </button>
+        </div>
 
           {/* Search and Filter */}
         <div className="mb-6">
@@ -323,47 +490,149 @@ const Schedule = () => {
             </div>
           </div>
 
-          {/* Today's Schedule */}
-        <div className="mb-8 rounded-xl border shadow-lg" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>
-          <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-800 m-0">Today's Schedule</h2>
-            <div className="flex items-center gap-2">
-              <button className="px-3 py-2 text-sm rounded bg-white border border-gray-300 hover:bg-gray-50" onClick={fetchSchedules}>Refresh</button>
-              <label className="text-sm text-gray-600">Page size:
-                <select className="ml-2 border border-gray-300 rounded px-2 py-1 text-sm" value={limit} onChange={(e)=> setLimit(Number(e.target.value))}>
-                  {[10,25,50,100].map(n => <option key={n} value={n}>{n}</option>)}
-                </select>
-              </label>
+          {/* Content based on active tab */}
+          {activeTab === 'schedules' ? (
+            <>
+              {/* Today's Schedule */}
+              <div className="mb-8 rounded-xl border shadow-lg" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>
+                <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-gray-800 m-0">Today's Schedule</h2>
+                  <div className="flex items-center gap-2">
+                    <button className="px-3 py-2 text-sm rounded bg-white border border-gray-300 hover:bg-gray-50" onClick={fetchSchedules}>Refresh</button>
+                    <label className="text-sm text-gray-600">Page size:
+                      <select className="ml-2 border border-gray-300 rounded px-2 py-1 text-sm" value={limit} onChange={(e)=> setLimit(Number(e.target.value))}>
+                        {[10,25,50,100].map(n => <option key={n} value={n}>{n}</option>)}
+                      </select>
+                    </label>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-3 p-4">
+                  {loading ? (
+                    <div className="p-4 text-center text-sm text-gray-600">Loading...</div>
+                  ) : todaySchedules.length === 0 ? (
+                    <div className="p-4 text-center text-sm text-gray-600">No items</div>
+                  ) : todaySchedules.map((it, idx) => (
+                    <div key={idx} className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+                      <h3 className="text-base font-semibold text-gray-800 m-0 mb-1">{it.title}</h3>
+                      {it.loc && <p className="text-sm text-gray-500 m-0 mb-1">{it.loc}</p>}
+                      <p className="text-sm text-gray-500 m-0">{it.time}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
-          <div className="flex flex-col gap-3 p-4">
-            {loading ? (
-              <div className="p-4 text-center text-sm text-gray-600">Loading...</div>
-            ) : todaySchedules.length === 0 ? (
-              <div className="p-4 text-center text-sm text-gray-600">No items</div>
-            ) : todaySchedules.map((it, idx) => (
-              <div key={idx} className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-                <h3 className="text-base font-semibold text-gray-800 m-0 mb-1">{it.title}</h3>
-                {it.loc && <p className="text-sm text-gray-500 m-0 mb-1">{it.loc}</p>}
-                <p className="text-sm text-gray-500 m-0">{it.time}</p>
-                </div>
-            ))}
-            </div>
-          </div>
 
-          {/* Yesterday Schedule */}
-        <div className="mb-8 rounded-xl border shadow-lg" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>
-          <div className="px-4 py-3 border-b border-gray-200"><h2 className="text-xl font-bold text-gray-800 m-0">Yesterday Schedule</h2></div>
-          <div className="flex flex-col gap-3 p-4">
-            {yesterdaySchedules.map((it, idx) => (
-              <div key={idx} className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-                <h3 className="text-base font-semibold text-gray-800 m-0 mb-1">{it.title}</h3>
-                {it.loc && <p className="text-sm text-gray-500 m-0 mb-1">{it.loc}</p>}
-                <p className="text-sm text-gray-500 m-0">{it.time}</p>
+              {/* Yesterday Schedule */}
+              <div className="mb-8 rounded-xl border shadow-lg" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>
+                <div className="px-4 py-3 border-b border-gray-200"><h2 className="text-xl font-bold text-gray-800 m-0">Yesterday Schedule</h2></div>
+                <div className="flex flex-col gap-3 p-4">
+                  {yesterdaySchedules.map((it, idx) => (
+                    <div key={idx} className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+                      <h3 className="text-base font-semibold text-gray-800 m-0 mb-1">{it.title}</h3>
+                      {it.loc && <p className="text-sm text-gray-500 m-0 mb-1">{it.loc}</p>}
+                      <p className="text-sm text-gray-500 m-0">{it.time}</p>
+                    </div>
+                  ))}
                 </div>
-            ))}
-            </div>
-          </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Events List */}
+              <div className="mb-8 rounded-xl border shadow-lg" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>
+                <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-gray-800 m-0">All Events</h2>
+                  <div className="flex items-center gap-2">
+                    <button className="px-3 py-2 text-sm rounded bg-white border border-gray-300 hover:bg-gray-50" onClick={fetchEvents}>Refresh</button>
+                    <label className="text-sm text-gray-600">Page size:
+                      <select className="ml-2 border border-gray-300 rounded px-2 py-1 text-sm" value={eventsLimit} onChange={(e)=> setEventsLimit(Number(e.target.value))}>
+                        {[10,25,50,100].map(n => <option key={n} value={n}>{n}</option>)}
+                      </select>
+                    </label>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-3 p-4">
+                  {eventsLoading ? (
+                    <div className="p-4 text-center text-sm text-gray-600">Loading...</div>
+                  ) : events.length === 0 ? (
+                    <div className="p-4 text-center text-sm text-gray-600">No events found</div>
+                  ) : events.map((event, idx) => (
+                    <div key={idx} className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="text-base font-semibold text-gray-800 m-0 mb-1">{event.title}</h3>
+                          <p className="text-sm text-gray-600 m-0 mb-2">{event.description}</p>
+                          <div className="flex items-center gap-4 text-sm text-gray-500">
+                            <span>📅 {event.event_date}</span>
+                            <span>🕐 {event.event_time}</span>
+                            <span>📍 {event.location}</span>
+                            <span className={`px-2 py-1 rounded text-xs ${
+                              event.event_type === 'meeting' ? 'bg-blue-100 text-blue-800' :
+                              event.event_type === 'conference' ? 'bg-purple-100 text-purple-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {event.event_type}
+                            </span>
+                            <span className={`px-2 py-1 rounded text-xs ${
+                              event.priority === 'high' ? 'bg-red-100 text-red-800' :
+                              event.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-green-100 text-green-800'
+                            }`}>
+                              {event.priority}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 ml-4">
+                          <button
+                            onClick={() => handleEditEvent(event.id)}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                            title="Edit Event"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteEvent(event)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                            title="Delete Event"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M3 6h18"></path>
+                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Upcoming Events */}
+              {upcomingEvents.length > 0 && (
+                <div className="mb-8 rounded-xl border shadow-lg" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>
+                  <div className="px-4 py-3 border-b border-gray-200">
+                    <h2 className="text-xl font-bold text-gray-800 m-0">Upcoming Events (Next 7 Days)</h2>
+                  </div>
+                  <div className="flex flex-col gap-3 p-4">
+                    {upcomingEvents.map((event, idx) => (
+                      <div key={idx} className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+                        <h3 className="text-base font-semibold text-gray-800 m-0 mb-1">{event.title}</h3>
+                        <p className="text-sm text-gray-600 m-0 mb-2">{event.description}</p>
+                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                          <span>📅 {event.event_date}</span>
+                          <span>🕐 {event.event_time}</span>
+                          <span>📍 {event.location}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </main>
 
         {/* Add Schedule Modal */}
@@ -415,6 +684,186 @@ const Schedule = () => {
         </div>
       )}
 
+      {/* Add Event Modal */}
+      {showAddEventModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000]" onClick={handleCloseModal}>
+          <div className="bg-white rounded-lg w-[90%] max-w-[600px] max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-800 m-0">Add Event</h2>
+              <button className="p-2 rounded text-gray-500 hover:bg-gray-100" onClick={handleCloseModal}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+            <form onSubmit={handleEventSubmit} className="px-6 py-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1" htmlFor="title">Event Title</label>
+                  <input className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" id="title" name="title" value={eventFormData.title} onChange={handleEventInputChange} placeholder="Enter Event Title" required />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1" htmlFor="event_type">Event Type</label>
+                  <select className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" id="event_type" name="event_type" value={eventFormData.event_type} onChange={handleEventInputChange} required>
+                    <option value="meeting">Meeting</option>
+                    <option value="conference">Conference</option>
+                    <option value="workshop">Workshop</option>
+                    <option value="seminar">Seminar</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1" htmlFor="event_date">Event Date</label>
+                  <input type="date" className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" id="event_date" name="event_date" value={eventFormData.event_date} onChange={handleEventInputChange} required />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1" htmlFor="event_time">Event Time</label>
+                  <input type="time" className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" id="event_time" name="event_time" value={eventFormData.event_time} onChange={handleEventInputChange} required />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1" htmlFor="location">Location</label>
+                  <input className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" id="location" name="location" value={eventFormData.location} onChange={handleEventInputChange} placeholder="Enter Location" required />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1" htmlFor="priority">Priority</label>
+                  <select className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" id="priority" name="priority" value={eventFormData.priority} onChange={handleEventInputChange} required>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-medium text-gray-600 mb-1" htmlFor="description">Description</label>
+                  <textarea className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" id="description" name="description" value={eventFormData.description} onChange={handleEventInputChange} placeholder="Enter Event Description" rows="3" required />
+                </div>
+              </div>
+              <div className="mt-4">
+                <label className="block text-xs font-medium text-gray-600 mb-1" htmlFor="event_photo">Upload Photo</label>
+                <div className="border border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center gap-2">
+                  <input type="file" id="event_photo" name="photo" onChange={handleEventFileChange} accept="image/*" className="hidden" />
+                  <button type="button" className="px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700" onClick={() => document.getElementById('event_photo').click()}>Browse photo</button>
+                  <span className="text-xs text-gray-500">Or</span>
+                  <p className="text-sm text-gray-500">Drag or Drop Here</p>
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button type="submit" className="bg-green-600 text-white px-5 py-2.5 rounded-full text-sm font-medium" disabled={eventsLoading}>
+                  {eventsLoading ? 'Adding...' : '+ Add Event'}
+                </button>
+                <button type="button" className="bg-gray-100 text-gray-700 px-5 py-2.5 rounded-full text-sm font-medium hover:bg-gray-200" onClick={handleCloseModal}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Event Modal */}
+      {showEditEventModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000]" onClick={handleCloseModal}>
+          <div className="bg-white rounded-lg w-[90%] max-w-[600px] max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-800 m-0">Edit Event</h2>
+              <button className="p-2 rounded text-gray-500 hover:bg-gray-100" onClick={handleCloseModal}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+            <form onSubmit={handleEventSubmit} className="px-6 py-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1" htmlFor="edit_title">Event Title</label>
+                  <input className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" id="edit_title" name="title" value={eventFormData.title} onChange={handleEventInputChange} placeholder="Enter Event Title" required />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1" htmlFor="edit_event_type">Event Type</label>
+                  <select className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" id="edit_event_type" name="event_type" value={eventFormData.event_type} onChange={handleEventInputChange} required>
+                    <option value="meeting">Meeting</option>
+                    <option value="conference">Conference</option>
+                    <option value="workshop">Workshop</option>
+                    <option value="seminar">Seminar</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1" htmlFor="edit_event_date">Event Date</label>
+                  <input type="date" className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" id="edit_event_date" name="event_date" value={eventFormData.event_date} onChange={handleEventInputChange} required />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1" htmlFor="edit_event_time">Event Time</label>
+                  <input type="time" className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" id="edit_event_time" name="event_time" value={eventFormData.event_time} onChange={handleEventInputChange} required />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1" htmlFor="edit_location">Location</label>
+                  <input className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" id="edit_location" name="location" value={eventFormData.location} onChange={handleEventInputChange} placeholder="Enter Location" required />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1" htmlFor="edit_priority">Priority</label>
+                  <select className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" id="edit_priority" name="priority" value={eventFormData.priority} onChange={handleEventInputChange} required>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-medium text-gray-600 mb-1" htmlFor="edit_description">Description</label>
+                  <textarea className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" id="edit_description" name="description" value={eventFormData.description} onChange={handleEventInputChange} placeholder="Enter Event Description" rows="3" required />
+                </div>
+              </div>
+              <div className="mt-4">
+                <label className="block text-xs font-medium text-gray-600 mb-1" htmlFor="edit_event_photo">Upload Photo</label>
+                <div className="border border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center gap-2">
+                  <input type="file" id="edit_event_photo" name="photo" onChange={handleEventFileChange} accept="image/*" className="hidden" />
+                  <button type="button" className="px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700" onClick={() => document.getElementById('edit_event_photo').click()}>Browse photo</button>
+                  <span className="text-xs text-gray-500">Or</span>
+                  <p className="text-sm text-gray-500">Drag or Drop Here</p>
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button type="submit" className="bg-blue-600 text-white px-5 py-2.5 rounded-full text-sm font-medium" disabled={eventsLoading}>
+                  {eventsLoading ? 'Updating...' : 'Update Event'}
+                </button>
+                <button type="button" className="bg-gray-100 text-gray-700 px-5 py-2.5 rounded-full text-sm font-medium hover:bg-gray-200" onClick={handleCloseModal}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirmModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000]" onClick={cancelDelete}>
+          <div className="bg-white rounded-lg shadow-2xl relative w-96 max-w-[90vw] mx-4" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red-600">
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">Delete Event</h3>
+                  <p className="text-sm text-gray-600">
+                    Are you sure you want to delete <strong>{eventToDelete?.title}</strong>? This action cannot be undone.
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={cancelDelete}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDeleteEvent}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
+                  disabled={eventsLoading}
+                >
+                  {eventsLoading ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Success Modal */}
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[1000]" onClick={handleCloseModal}>
@@ -427,8 +876,12 @@ const Schedule = () => {
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20,6 9,17 4,12"></polyline></svg>
               </div>
               <div className="text-center">
-                <h3 className="text-emerald-600 text-xl font-semibold mb-2">Schedule Added Successfully</h3>
-                <p className="text-gray-600 text-sm">The schedule has been created and saved</p>
+                <h3 className="text-emerald-600 text-xl font-semibold mb-2">
+                  {activeTab === 'schedules' ? 'Schedule Added Successfully' : 'Event Updated Successfully'}
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  {activeTab === 'schedules' ? 'The schedule has been created and saved' : 'The event has been updated and saved'}
+                </p>
               </div>
             </div>
           </div>

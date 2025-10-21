@@ -477,6 +477,294 @@ export const deleteProject = async (projectId) => {
   return await response.text();
 };
 
+// ===== Notifications API =====
+export const getUserNotifications = async (userId, { skip = 0, limit = 100, unread_only = false } = {}) => {
+  const params = new URLSearchParams({ skip: String(skip), limit: String(limit), unread_only: String(unread_only) });
+  const response = await fetch(`/api/notifications/user/${encodeURIComponent(userId)}?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.json();
+};
+
+export const getMyNotifications = async ({ skip = 0, limit = 100, unread_only = false } = {}) => {
+  const params = new URLSearchParams({ skip: String(skip), limit: String(limit), unread_only: String(unread_only) });
+  const response = await fetch(`/api/notifications/my?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.json();
+};
+
+export const getPublicNotifications = async ({ skip = 0, limit = 100 } = {}) => {
+  const params = new URLSearchParams({ skip: String(skip), limit: String(limit) });
+  const response = await fetch(`/api/notifications/public?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.json();
+};
+
+export const getNotificationById = async (notificationId) => {
+  const response = await fetch(`/api/notifications/${encodeURIComponent(notificationId)}`, { method: 'GET', headers: getAuthHeaders() });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.json();
+};
+
+export const updateNotification = async (notificationId, payload) => {
+  const response = await fetch(`/api/notifications/${encodeURIComponent(notificationId)}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.json();
+};
+
+export const deleteNotification = async (notificationId) => {
+  const response = await fetch(`/api/notifications/${encodeURIComponent(notificationId)}`, { method: 'DELETE', headers: getAuthHeaders() });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.text();
+};
+
+export const createNotification = async (payload) => {
+  const response = await fetch('/api/notifications/', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.json();
+};
+
+export const markNotificationRead = async (notificationId) => {
+  const response = await fetch(`/api/notifications/${encodeURIComponent(notificationId)}/mark-read`, { method: 'PUT', headers: getAuthHeaders() });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.text();
+};
+
+export const markAllNotificationsRead = async () => {
+  const response = await fetch('/api/notifications/mark-all-read', { method: 'PUT', headers: getAuthHeaders() });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.text();
+};
+
+// ===== Upload API =====
+export const uploadImage = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const response = await fetch('/api/upload/image', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+    },
+    body: formData
+  });
+  
+  if (!response.ok) throw new Error(await response.text());
+  return await response.text();
+};
+
+export const uploadVideo = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const response = await fetch('/api/upload/video', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+    },
+    body: formData
+  });
+  
+  if (!response.ok) throw new Error(await response.text());
+  return await response.text();
+};
+
+export const uploadDocument = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const response = await fetch('/api/upload/document', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+    },
+    body: formData
+  });
+  
+  if (!response.ok) throw new Error(await response.text());
+  return await response.text();
+};
+
+export const uploadMultipleFiles = async (files) => {
+  const formData = new FormData();
+  files.forEach(file => {
+    formData.append('files', file);
+  });
+  
+  const response = await fetch('/api/upload/multiple', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+    },
+    body: formData
+  });
+  
+  if (!response.ok) throw new Error(await response.text());
+  return await response.text();
+};
+
+// ===== Constituencies API =====
+export const getAllConstituencies = async () => {
+  const response = await fetch('/api/constituencies/', { 
+    method: 'GET', 
+    headers: getAuthHeaders() 
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.json();
+};
+
+export const getConstituencyById = async (constituencyId) => {
+  const response = await fetch(`/api/constituencies/${encodeURIComponent(constituencyId)}`, { 
+    method: 'GET', 
+    headers: getAuthHeaders() 
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.json();
+};
+
+// ===== Departments API =====
+export const getAllDepartments = async () => {
+  const response = await fetch('/api/departments/', { 
+    method: 'GET', 
+    headers: getAuthHeaders() 
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.json();
+};
+
+export const getDepartmentById = async (departmentId) => {
+  const response = await fetch(`/api/departments/${encodeURIComponent(departmentId)}`, { 
+    method: 'GET', 
+    headers: getAuthHeaders() 
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.json();
+};
+
+// ===== Admin Authentication API =====
+export const adminLogin = async (email, password) => {
+  const response = await fetch('/api/admin/auth/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ email, password })
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.json();
+};
+
+export const getCurrentAdmin = async () => {
+  const response = await fetch('/api/admin/auth/me', { 
+    method: 'GET', 
+    headers: getAuthHeaders() 
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.json();
+};
+
+export const adminLogout = async () => {
+  const response = await fetch('/api/admin/auth/logout', {
+    method: 'POST',
+    headers: getAuthHeaders()
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.text();
+};
+
+export const validateAdminAccess = async () => {
+  const response = await fetch('/api/admin/auth/validate', { 
+    method: 'GET', 
+    headers: getAuthHeaders() 
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.text();
+};
+
+export const createAdmin = async (adminData) => {
+  const response = await fetch('/api/admin/auth/create', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders()
+    },
+    body: JSON.stringify(adminData)
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.json();
+};
+
+export const getAllAdmins = async () => {
+  const response = await fetch('/api/admin/auth/list', { 
+    method: 'GET', 
+    headers: getAuthHeaders() 
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.json();
+};
+
+export const updateAdmin = async (adminId, adminData) => {
+  const response = await fetch(`/api/admin/auth/update/${encodeURIComponent(adminId)}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders()
+    },
+    body: JSON.stringify(adminData)
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.json();
+};
+
+export const deleteAdmin = async (adminId) => {
+  const response = await fetch(`/api/admin/auth/delete/${encodeURIComponent(adminId)}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders()
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.text();
+};
+
+// ===== User Authentication API =====
+export const loginUser = async (email, password) => {
+  const response = await fetch('/api/auth/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ email, password })
+  });
+  if (!response.ok) throw new Error(await response.text());
+  const result = await response.json();
+  
+  // Store the access token in localStorage
+  localStorage.setItem('access_token', result.access_token);
+  localStorage.setItem('token_type', result.token_type);
+  localStorage.setItem('expires_in', result.expires_in);
+  localStorage.setItem('login_time', Date.now().toString());
+  
+  return result;
+};
+
+export const registerUser = async (userData) => {
+  const response = await fetch('/api/auth/register', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(userData)
+  });
+  if (!response.ok) throw new Error(await response.text());
+  const result = await response.json();
+  
+  // Store the access token in localStorage
+  localStorage.setItem('access_token', result.access_token);
+  localStorage.setItem('token_type', result.token_type);
+  localStorage.setItem('expires_in', result.expires_in);
+  localStorage.setItem('login_time', Date.now().toString());
+  
+  return result;
+};
+
 // Load voter IDs from file (Admin only)
 export const loadVoterIds = async () => {
   try {
