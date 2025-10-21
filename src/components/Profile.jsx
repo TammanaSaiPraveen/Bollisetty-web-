@@ -2,8 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import fullLogo from '../assets/Images/fulllogo.png';
 import apImage from '../assets/Images/AP.png';
+import { useUser } from '../contexts/UserContext';
+import { getMyProfile, updateMyProfile } from '../utils/auth';
 
 const Profile = () => {
+  const { user, loading, error, fetchUserData, updateUser, updateUserProfileData, handleLogout } = useUser();
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [planExpanded, setPlanExpanded] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -24,6 +27,7 @@ const Profile = () => {
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const profileRef = useRef(null);
 
   const toggleSidebar = () => {
@@ -50,6 +54,47 @@ const Profile = () => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
+  }, []);
+
+  // Populate form with user data when user is loaded
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        mobileNumber: user.phoneNumber ? `+91 ${user.phoneNumber.slice(-1)}` : '+91 *********5',
+        voterId: user.voterId ? user.voterId.slice(-1) : '**********',
+        email: user.email || '',
+        address: user.address || '',
+        description: user.description || '',
+        constituency: user.constituencyId || '',
+        category: user.roleId || ''
+      });
+      
+      if (user.profilePictureUrl) {
+        setImagePreview(user.profilePictureUrl);
+      }
+    }
+  }, [user]);
+
+  // Also try to hydrate from users service /me/profile if available
+  useEffect(() => {
+    (async () => {
+      const me = await getMyProfile();
+      if (me) {
+        setFormData(prev => ({
+          ...prev,
+          firstName: me.firstName || prev.firstName,
+          lastName: me.lastName || prev.lastName,
+          email: me.email || prev.email,
+          address: me.address || prev.address,
+          description: me.description || prev.description,
+          constituency: me.constituency || me.constituencyId || prev.constituency,
+          category: me.role || me.roleId || prev.category
+        }));
+        if (me.profilePictureUrl && !imagePreview) setImagePreview(me.profilePictureUrl);
+      }
+    })();
   }, []);
 
   const handleInputChange = (e) => {
@@ -129,12 +174,27 @@ const Profile = () => {
     setIsSubmitting(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      console.log('Profile updated:', formData);
-      // Show success message or redirect
+      // Prepare data for API (only include fields that can be updated)
+      const updateData = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        address: formData.address,
+        description: formData.description,
+        profilePictureUrl: imagePreview, // Use the image preview URL
+        constituencyId: formData.constituency
+      };
+      
+      // Call the API to update profile (both legacy and new)
+      try { await updateUserProfileData(updateData); } catch (e) {}
+      try { await updateMyProfile(updateData); } catch (e) {}
+      
+      // Show success modal
+      setShowSuccessModal(true);
+      
     } catch (error) {
       console.error('Error updating profile:', error);
+      alert(`Error updating profile: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -309,14 +369,17 @@ const Profile = () => {
 
         {/* Logout Button - positioned at bottom */}
         <div className="mt-auto p-2">
-          <div className="flex items-center justify-center p-4 text-gray-800 rounded-md hover:bg-white/30">
+          <button 
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center p-4 text-gray-800 rounded-md hover:bg-white/30 transition-colors"
+          >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
               <polyline points="16,17 21,12 16,7"></polyline>
               <line x1="21" y1="12" x2="9" y2="12"></line>
             </svg>
             <span className={`ml-3 text-sm font-medium whitespace-nowrap transition-all ${sidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>Logout</span>
-          </div>
+          </button>
         </div>
       </aside>
 
@@ -649,7 +712,7 @@ const Profile = () => {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Updating...
+                    Updating Profile...
                   </>
                 ) : (
                   <>
@@ -666,6 +729,26 @@ const Profile = () => {
           </form>
         </div>
       </main>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[1000]" onClick={() => setShowSuccessModal(false)}>
+          <div className="bg-white rounded-xl p-12 text-center shadow-2xl relative w-96 max-w-[90vw]" onClick={(e) => e.stopPropagation()}>
+            <button className="absolute top-4 right-4 p-2 rounded-full text-gray-500 hover:bg-gray-100 transition-colors" onClick={() => setShowSuccessModal(false)}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <div className="flex flex-col items-center gap-6">
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20,6 9,17 4,12"></polyline></svg>
+              </div>
+              <div className="text-center">
+                <h3 className="text-emerald-600 text-xl font-semibold mb-2">Profile Updated Successfully</h3>
+                <p className="text-gray-600 text-sm">Your profile information has been updated</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

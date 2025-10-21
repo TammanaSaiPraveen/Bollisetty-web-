@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import fullLogo from '../assets/Images/fulllogo.png';
 import apImage from '../assets/Images/AP.png';
 import filterIcon from '../assets/icons/filter.png'
+import { getSchedules, createSchedule, getScheduleEvents, createScheduleEvent } from '../utils/auth';
 
 const Schedule = () => {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
@@ -25,15 +26,13 @@ const Schedule = () => {
     reason: '',
     photo: null
   });
-  const [todaySchedules, setTodaySchedules] = useState([
-    {title:'Meet at CM Camp Office', loc:'Location: Velangapudi, Amaravathi, AP', time:'Time:09:00 AM - 12:00PM'},
-    {title:'Farmers', time:'Time:09:00 AM - 12:00PM'},
-    {title:'Farmers', time:'Time:09:00 AM - 12:00PM'},
-  ]);
-  const [yesterdaySchedules] = useState([
-    {title:'Meet at CM Camp Office', loc:'Location: Velangapudi, Amaravathi, AP', time:'Time:09:00 AM - 12:00PM'},
-    {title:'Farmers', time:'Time:09:00 AM - 12:00PM'},
-  ]);
+  const [events, setEvents] = useState([]);
+  const [todaySchedules, setTodaySchedules] = useState([]);
+  const [yesterdaySchedules, setYesterdaySchedules] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [skip, setSkip] = useState(0);
+  const [limit, setLimit] = useState(25);
   
   const profileRef = useRef(null);
 
@@ -59,19 +58,33 @@ const Schedule = () => {
     setFormData(prev => ({ ...prev, photo: file }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Add to Today's Schedule immediately
-    const newItem = {
-      title: formData.reason || 'Scheduled Event',
-      loc: formData.location ? `Location: ${formData.location}` : undefined,
-      time: formData.time ? `Time:${formData.time}` : 'Time:TBD'
-    };
-    setTodaySchedules((prev) => [newItem, ...prev]);
+    try {
+      setLoading(true);
+      setError('');
+      const payload = {
+        title: formData.reason,
+        scheduledDate: formData.date,
+        scheduledTime: formData.time,
+        location: formData.location
+      };
+      const created = await createSchedule(payload);
+      const newItem = {
+        title: created.title || formData.reason,
+        loc: created.location ? `Location: ${created.location}` : undefined,
+        time: created.scheduledTime ? `Time:${created.scheduledTime}` : (formData.time ? `Time:${formData.time}` : 'Time:TBD')
+      };
+      setTodaySchedules((prev) => [newItem, ...prev]);
     setShowAddScheduleModal(false);
     setShowSuccessModal(true);
-    setTimeout(() => setShowSuccessModal(false), 2000);
-    setFormData({ date: '', time: '', location: '', reason: '', photo: null });
+      setTimeout(() => setShowSuccessModal(false), 2000);
+      setFormData({ date: '', time: '', location: '', reason: '', photo: null });
+    } catch (err) {
+      setError(String(err.message || err));
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Close dropdown when clicking outside
@@ -88,6 +101,50 @@ const Schedule = () => {
 
   const sidebarWidthPx = sidebarExpanded ? 200 : 60;
 
+  // Fetch schedules and split into today/yesterday groups
+  const fetchSchedules = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const data = await getSchedules({ skip, limit });
+      const items = Array.isArray(data) ? data : data.items || [];
+      const today = [];
+      const yesterday = [];
+      const now = new Date();
+      const todayStr = now.toISOString().slice(0,10);
+      const yDate = new Date(now.getTime() - 24*60*60*1000).toISOString().slice(0,10);
+      items.forEach((s) => {
+        const dateStr = (s.scheduledDate || s.date || '').slice(0,10) || todayStr;
+        const obj = {
+          title: s.title || 'Scheduled Event',
+          loc: s.location ? `Location: ${s.location}` : undefined,
+          time: s.scheduledTime ? `Time:${s.scheduledTime}` : 'Time:TBD'
+        };
+        if (dateStr === todayStr) today.push(obj); else if (dateStr === yDate) yesterday.push(obj);
+      });
+      setTodaySchedules(today);
+      setYesterdaySchedules(yesterday);
+    } catch (err) {
+      setError(String(err.message || err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchSchedules(); /* eslint-disable-next-line */ }, [skip, limit]);
+
+  // Fetch schedule events (separate view/list)
+  const fetchEvents = async () => {
+    try {
+      const data = await getScheduleEvents({ skip, limit });
+      const items = Array.isArray(data) ? data : data.items || [];
+      setEvents(items);
+    } catch (err) {
+      // ignore optional errors here to keep page functional
+    }
+  };
+  useEffect(() => { fetchEvents(); /* eslint-disable-next-line */ }, [skip, limit]);
+
   return (
     <div className="min-h-screen bg-[#f5f5f5] font-[Inter,Segoe_UI,Tahoma,Geneva,Verdana,sans-serif]">
       {/* Header/Navbar */}
@@ -96,6 +153,7 @@ const Schedule = () => {
           <div className="flex items-center gap-4">
             <img src={fullLogo} alt="Logo" className="w-[200px] h-auto object-contain" />
           </div>
+          {error && <div className="mb-3 text-sm text-red-600">{error}</div>}
         </div>
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 flex items-center justify-center text-gray-800 cursor-pointer rounded-md transition relative hover:bg-white/10">
@@ -267,19 +325,33 @@ const Schedule = () => {
 
           {/* Today's Schedule */}
         <div className="mb-8 rounded-xl border shadow-lg" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>
-          <div className="px-4 py-3 border-b border-gray-200"><h2 className="text-xl font-bold text-gray-800 m-0">Today's Schedule</h2></div>
+          <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+            <h2 className="text-xl font-bold text-gray-800 m-0">Today's Schedule</h2>
+            <div className="flex items-center gap-2">
+              <button className="px-3 py-2 text-sm rounded bg-white border border-gray-300 hover:bg-gray-50" onClick={fetchSchedules}>Refresh</button>
+              <label className="text-sm text-gray-600">Page size:
+                <select className="ml-2 border border-gray-300 rounded px-2 py-1 text-sm" value={limit} onChange={(e)=> setLimit(Number(e.target.value))}>
+                  {[10,25,50,100].map(n => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </label>
+                </div>
+              </div>
           <div className="flex flex-col gap-3 p-4">
-            {todaySchedules.map((it, idx) => (
+            {loading ? (
+              <div className="p-4 text-center text-sm text-gray-600">Loading...</div>
+            ) : todaySchedules.length === 0 ? (
+              <div className="p-4 text-center text-sm text-gray-600">No items</div>
+            ) : todaySchedules.map((it, idx) => (
               <div key={idx} className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
                 <h3 className="text-base font-semibold text-gray-800 m-0 mb-1">{it.title}</h3>
                 {it.loc && <p className="text-sm text-gray-500 m-0 mb-1">{it.loc}</p>}
                 <p className="text-sm text-gray-500 m-0">{it.time}</p>
-              </div>
+                </div>
             ))}
+            </div>
           </div>
-        </div>
 
-        {/* Yesterday Schedule */}
+          {/* Yesterday Schedule */}
         <div className="mb-8 rounded-xl border shadow-lg" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>
           <div className="px-4 py-3 border-b border-gray-200"><h2 className="text-xl font-bold text-gray-800 m-0">Yesterday Schedule</h2></div>
           <div className="flex flex-col gap-3 p-4">
@@ -288,10 +360,10 @@ const Schedule = () => {
                 <h3 className="text-base font-semibold text-gray-800 m-0 mb-1">{it.title}</h3>
                 {it.loc && <p className="text-sm text-gray-500 m-0 mb-1">{it.loc}</p>}
                 <p className="text-sm text-gray-500 m-0">{it.time}</p>
-              </div>
+                </div>
             ))}
+            </div>
           </div>
-        </div>
         </main>
 
         {/* Add Schedule Modal */}
@@ -308,14 +380,14 @@ const Schedule = () => {
                   <label htmlFor="date" className="block text-xs font-medium text-gray-600 mb-1">Date</label>
                   <div className="relative">
                     <input type="date" id="date" name="date" value={formData.date} onChange={handleInputChange} required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" />
-                  </div>
                 </div>
+              </div>
                 <div>
                   <label htmlFor="time" className="block text-xs font-medium text-gray-600 mb-1">Time</label>
                   <div className="relative">
                     <input type="time" id="time" name="time" value={formData.time} onChange={handleInputChange} required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" />
-                  </div>
-                </div>
+              </div>
+              </div>
                 <div className="sm:col-span-2">
                   <label htmlFor="location" className="block text-xs font-medium text-gray-600 mb-1">Location</label>
                   <input type="text" id="location" name="location" value={formData.location} onChange={handleInputChange} placeholder="Street, City, Pin" required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" />
@@ -323,7 +395,7 @@ const Schedule = () => {
                 <div className="sm:col-span-2">
                   <label htmlFor="reason" className="block text-xs font-medium text-gray-600 mb-1">Reason</label>
                   <input id="reason" name="reason" value={formData.reason} onChange={handleInputChange} placeholder="Detailed Description....." required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" />
-              </div>
+                  </div>
               </div>
               <div className="mt-4">
                 <label className="block text-xs font-medium text-gray-600 mb-1">Upload Photo</label>
@@ -332,8 +404,8 @@ const Schedule = () => {
                   <button type="button" className="px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700" onClick={() => document.getElementById('photo').click()}>Browse photo</button>
                   <span className="text-xs text-gray-500">Or</span>
                   <p className="text-sm text-gray-500">Drag or Drop Here</p>
-                  </div>
                 </div>
+              </div>
               <div className="flex gap-3 mt-6">
                 <button type="submit" className="bg-blue-600 text-white px-5 py-2.5 rounded-full text-sm font-medium">+ Add</button>
                 <button type="button" className="bg-gray-100 text-gray-700 px-5 py-2.5 rounded-full text-sm font-medium hover:bg-gray-200" onClick={handleCloseModal}>Cancel</button>

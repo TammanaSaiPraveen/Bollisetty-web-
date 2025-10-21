@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import fullLogo from '../assets/Images/fulllogo.png';
 import apImage from '../assets/Images/AP.png';
 import filterIcon from '../assets/icons/filter.png'
+import { getProjects, createProject } from '../utils/auth';
 
 const Development = () => {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
@@ -109,41 +110,40 @@ const Development = () => {
     </div>
   );
   const [formData, setFormData] = useState({ launchDate: '', launchTime: '', title: '', description: '', photo: null });
-  const [projects, setProjects] = useState({
-    current: [
-      { t: 'Water Supply Disruption', loc: 'Ganeshnagar, Tadepalligudem', time: 'Time: 09:00 AM', status: 'Current' },
-      { t: 'Farmers', loc: '', time: 'Time: 09:00 AM - 12:00PM', status: 'Current' },
-      { t: 'Farmers', loc: '', time: 'Time: 09:00 AM - 12:00PM', status: 'Current' },
-    ],
-    completed: [
-      { t: 'Street Lights Upgrade', loc: 'Ward-12', time: 'Completed: 02:30 PM', status: 'Completed' },
-      { t: 'Drainage Clean-up', loc: 'Market Road', time: 'Completed: 11:10 AM', status: 'Completed' },
-    ],
-    proposed: [
-      { t: 'New Community Center', loc: 'Central Area', time: 'Proposed: Q2 2024', status: 'Proposed' },
-      { t: 'Road Widening Project', loc: 'Main Highway', time: 'Proposed: Q3 2024', status: 'Proposed' },
-      { t: 'Digital Library Setup', loc: 'Educational Zone', time: 'Proposed: Q4 2024', status: 'Proposed' },
-    ]
-  });
+  const [projects, setProjects] = useState({ current: [], completed: [], proposed: [] });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [skip, setSkip] = useState(0);
+  const [limit, setLimit] = useState(25);
 
   const handleAddProjects = () => setShowAddProjectsModal(true);
   const handleCloseModal = () => { setShowAddProjectsModal(false); setShowSuccessModal(false); setFormData({ launchDate: '', launchTime: '', title: '', description: '', photo: null }); };
   const handleInputChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   const handleFileChange = (e) => setFormData(prev => ({ ...prev, photo: e.target.files[0] }));
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const type = selectedProjectType; // current/completed/proposed
-    const newItem = {
-      t: formData.title || 'New Project',
-      loc: formData.description ? formData.description : '',
-      time: type === 'completed' ? `Completed: ${formData.launchTime || 'TBD'}` : type === 'proposed' ? `Proposed: ${formData.launchTime || 'TBD'}` : `Time: ${formData.launchTime || 'TBD'}`,
-      status: type === 'completed' ? 'Completed' : type === 'proposed' ? 'Proposed' : 'Current'
-    };
-    setProjects(prev => ({ ...prev, [type]: [newItem, ...(prev[type] || [])] }));
+    try {
+      setLoading(true);
+      setError('');
+      const payload = { title: formData.title, description: formData.description, launchDate: formData.launchDate, launchTime: formData.launchTime, type: selectedProjectType };
+      const created = await createProject(payload);
+      const type = (created.type || selectedProjectType || 'current').toLowerCase();
+      const newItem = {
+        t: created.title || formData.title,
+        loc: created.description || formData.description || '',
+        time: type === 'completed' ? `Completed: ${created.launchTime || formData.launchTime || 'TBD'}` : type === 'proposed' ? `Proposed: ${created.launchTime || formData.launchTime || 'TBD'}` : `Time: ${created.launchTime || formData.launchTime || 'TBD'}`,
+        status: type === 'completed' ? 'Completed' : type === 'proposed' ? 'Proposed' : 'Current'
+      };
+      setProjects(prev => ({ ...prev, [type]: [newItem, ...(prev[type] || [])] }));
     setShowAddProjectsModal(false);
     setShowSuccessModal(true);
-    setTimeout(() => setShowSuccessModal(false), 2000);
-    setFormData({ launchDate: '', launchTime: '', title: '', description: '', photo: null });
+      setTimeout(() => setShowSuccessModal(false), 2000);
+      setFormData({ launchDate: '', launchTime: '', title: '', description: '', photo: null });
+    } catch (err) {
+      setError(String(err.message || err));
+    } finally {
+      setLoading(false);
+    }
   };
   const toggleProjectsView = () => setShowCompletedProjects(prev => !prev);
   const toggleDropdown = () => setShowDropdown(!showDropdown);
@@ -151,6 +151,33 @@ const Development = () => {
   const getProjectTypeLabel = () => selectedProjectType === 'completed' ? 'Completed Projects' : selectedProjectType === 'proposed' ? 'Proposed Projects' : 'Current Projects';
 
   const sidebarWidthPx = sidebarExpanded ? 200 : 60;
+
+  const fetchProjects = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const data = await getProjects({ skip, limit });
+      const items = Array.isArray(data) ? data : data.items || [];
+      const next = { current: [], completed: [], proposed: [] };
+      items.forEach((p) => {
+        const type = (p.type || 'current').toLowerCase();
+        const obj = {
+          t: p.title || '-',
+          loc: p.description || '',
+          time: p.launchTime ? `Time: ${p.launchTime}` : 'Time: TBD',
+          status: type === 'completed' ? 'Completed' : type === 'proposed' ? 'Proposed' : 'Current'
+        };
+        next[type] = [...(next[type] || []), obj];
+      });
+      setProjects(next);
+    } catch (err) {
+      setError(String(err.message || err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchProjects(); /* eslint-disable-next-line */ }, [skip, limit]);
 
   return (
     <div className="min-h-screen bg-[#f5f5f5] font-[Inter,Segoe_UI,Tahoma,Geneva,Verdana,sans-serif]">
@@ -236,7 +263,17 @@ const Development = () => {
       <main className="relative z-[1] min-h-screen p-8 pt-20 transition-all" style={{ marginLeft: sidebarWidthPx, backgroundImage: `url(${apImage})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
         <div className="mb-6"><h1 className="text-[1.75rem] font-bold text-gray-800 m-0">Development</h1></div>
 
-        <div className="mb-6"><button className="bg-blue-500 text-white border-0 px-6 py-3 rounded-md text-base font-medium cursor-pointer transition hover:bg-blue-600 flex items-center gap-2" onClick={handleAddProjects}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Add Projects</button></div>
+        <div className="mb-6">
+          <button className="bg-blue-500 text-white border-0 px-6 py-3 rounded-md text-base font-medium cursor-pointer transition hover:bg-blue-600 flex items-center gap-2" onClick={handleAddProjects}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Add Projects</button>
+          <div className="mt-3 flex items-center gap-3">
+            <button className="px-3 py-2 text-sm rounded bg-white border border-gray-300 hover:bg-gray-50" onClick={fetchProjects}>Refresh</button>
+            <label className="text-sm text-gray-600">Page size:
+              <select className="ml-2 border border-gray-300 rounded px-2 py-1 text-sm" value={limit} onChange={(e)=> setLimit(Number(e.target.value))}>
+                {[10,25,50,100].map(n => <option key={n} value={n}>{n}</option>)}
+              </select>
+            </label>
+        </div>
+        </div>
 
         {/* Search and Filter */}
         <div className="mb-6">
@@ -255,7 +292,7 @@ const Development = () => {
                 <button type="button" onClick={()=>setShowDateOptions((s)=>!s)} className="w-full text-left flex items-center gap-2 text-sm text-gray-700 px-2 py-1.5 rounded hover:bg-gray-50">
                   <span className="w-3 h-3 rounded-full border border-gray-400"></span>
                   <span>Date</span>
-                </button>
+            </button>
                 {showDateOptions && (
                   <div className="pl-6 py-1 flex flex-col gap-2 text-sm text-gray-700">
                     {['Today','This Week'].map((d)=> (
@@ -264,7 +301,7 @@ const Development = () => {
                         <span>{d}</span>
                       </label>
                     ))}
-              </div>
+          </div>
                 )}
                 <button type="button" onClick={()=>setShowStatusOptions((s)=>!s)} className="w-full text-left flex items-center gap-2 text-sm text-gray-700 px-2 py-1.5 rounded hover:bg-gray-50">
                   <span className="w-3 h-3 rounded-full border border-gray-400"></span>
@@ -278,7 +315,7 @@ const Development = () => {
                         <span>{st}</span>
                       </label>
                     ))}
-            </div>
+        </div>
                 )}
                 <button type="button" onClick={()=>setShowLocationOptions((s)=>!s)} className="w-full text-left flex items-center gap-2 text-sm text-gray-700 px-2 py-1.5 rounded hover:bg-gray-50">
                   <span className="w-3 h-3 rounded-full border border-gray-400"></span>
@@ -292,16 +329,16 @@ const Development = () => {
                         <span>{loc}</span>
                       </label>
                     ))}
-          </div>
+              </div>
                 )}
                 <div className="flex justify-end gap-2 mt-3">
                   <button className="px-3 py-1.5 rounded text-sm text-gray-700 hover:bg-gray-100" onClick={()=>{setSelectedDates([]); setSelectedStatuses([]); setSelectedLocations([]);}}>Reset</button>
                   <button className="px-3 py-1.5 rounded text-sm text-white bg-blue-600 hover:bg-blue-700" onClick={()=>setShowFilter(false)}>Apply</button>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
+              )}
+                  </div>
+                </div>
 
         {/* Content Row */}
         <div className="grid grid-cols-1 lg:grid-cols-[520px_1fr] gap-6 mb-8">
@@ -311,8 +348,8 @@ const Development = () => {
               {['Ganeshnagar','Water Problem','Water Problem','Current Problem'].map((t, idx) => (
                 <div key={t+idx} className="px-3 py-2 text-sm text-gray-700 border-t first:border-t-0" style={{ borderColor: 'rgba(229,231,235,1)' }}>{t}</div>
               ))}
-                  </div>
-                </div>
+              </div>
+            </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {[0,1].map((i) => (
               <div key={i} className="rounded-xl p-6 shadow-md" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>
@@ -334,10 +371,10 @@ const Development = () => {
                     <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: PIE_COLORS.completed }}></div><span className="text-sm">Completed 40</span></div>
                   </div>
                 </div>
-                  </div>
+              </div>
             ))}
-                  </div>
-                </div>
+          </div>
+        </div>
 
         {/* Current/Completed Projects toggle */}
         <div className="rounded-xl p-6 backdrop-saturate-[1.2] backdrop-blur-[2px]" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>
@@ -346,16 +383,16 @@ const Development = () => {
               <h2 className="text-xl font-bold text-gray-800 m-0 cursor-pointer" onClick={toggleDropdown}>{getProjectTypeLabel()}</h2>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`transition-transform ${showDropdown ? 'rotate-180' : ''} cursor-pointer`} onClick={toggleDropdown}><polyline points="6,9 12,15 18,9"></polyline></svg>
             </div>
-            {showDropdown && (
+              {showDropdown && (
               <div className="absolute left-0 top-full mt-2 w-60 rounded-md shadow-lg z-10" style={{ backgroundColor: 'rgba(255,255,255,0.98)', border: '1px solid rgba(209,213,219,0.8)' }}>
                 <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50" onClick={() => selectProjectType('current')}>Current Projects</button>
                 <div className="h-px bg-gray-200"></div>
                 <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50" onClick={() => selectProjectType('completed')}>Completed Projects</button>
                 <div className="h-px bg-gray-200"></div>
                 <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50" onClick={() => selectProjectType('proposed')}>Proposed Projects</button>
-              </div>
-            )}
-          </div>
+                </div>
+              )}
+            </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {(() => {
               let items = [];
@@ -383,7 +420,7 @@ const Development = () => {
                     <h3 className="text-base font-semibold text-gray-800 m-0 mb-1">{p.t}</h3>
                     {p.loc && <p className="text-sm text-gray-500 m-0 mb-1">Location: {p.loc}</p>}
                     <p className="text-sm text-gray-500 m-0">{p.time}</p>
-                  </div>
+          </div>
                 ))
               ) : (
                 <div className="text-sm text-gray-500">No results</div>

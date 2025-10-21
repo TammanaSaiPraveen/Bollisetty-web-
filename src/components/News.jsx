@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import fullLogo from '../assets/Images/fulllogo.png';
 import apImage from '../assets/Images/AP.png';
+import { getNews, createNews } from '../utils/auth';
 // Thumbnails for news cards
 import newsThumbWater from '../assets/Images/Water_Supply1.png';
 import newsThumbPotholes from '../assets/Images/potholes.png';
@@ -23,15 +24,12 @@ const News = () => {
   const [selectedTimes, setSelectedTimes] = useState([]);
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [formData, setFormData] = useState({ date: '', time: '', title: '', description: '', photo: null });
-  const [trendingNews, setTrendingNews] = useState([
-    { date: 'Trending', title: 'Water Supply Disruption', location: 'Ganeshnagar, Tadepalligudem', time: '09:00 AM', img: newsThumbWater },
-    { date: 'Trending', title: 'Farmers', location: '', time: '09:00 AM - 12:00PM', img: newsThumbPotholes },
-    { date: 'Trending', title: 'Farmers', location: '', time: '09:00 AM - 12:00PM', img: newsThumbLight },
-  ]);
-  const [datedNews, setDatedNews] = useState([
-    { date: '07/09/2025', title: 'Water Supply Disruption', location: 'Ganeshnagar, Tadepalligudem', time: '09:00 AM', img: newsThumbWater },
-    { date: '07/09/2025', title: 'Farmers', location: '', time: '09:00 AM - 12:00PM', img: newsThumbPotholes },
-  ]);
+  const [trendingNews, setTrendingNews] = useState([]);
+  const [datedNews, setDatedNews] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [skip, setSkip] = useState(0);
+  const [limit, setLimit] = useState(25);
   const profileRef = useRef(null);
 
   const toggleSidebar = () => setSidebarExpanded(!sidebarExpanded);
@@ -52,20 +50,30 @@ const News = () => {
   };
   const handleFileChange = (e) => setFormData(prev => ({ ...prev, photo: e.target.files[0] }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const isTrending = formData.date.toLowerCase() === 'trending';
-    const imageSrc = formData.photo ? URL.createObjectURL(formData.photo) : newsThumbWater;
-    const newItem = { date: formData.date || 'Trending', title: formData.title, location: formData.description, time: formData.time || '', img: imageSrc };
-    if (isTrending) {
-      setTrendingNews(prev => [newItem, ...prev]);
-    } else {
-      setDatedNews(prev => [newItem, ...prev]);
-    }
+    try {
+      setLoading(true);
+      setError('');
+      const payload = { title: formData.title, description: formData.description, date: formData.date, time: formData.time };
+      const created = await createNews(payload);
+      const item = {
+        date: created.date || formData.date || 'Trending',
+        title: created.title || formData.title,
+        location: created.description || formData.description,
+        time: created.time || formData.time || '',
+        img: newsThumbWater
+      };
+      if ((item.date || '').toLowerCase() === 'trending') setTrendingNews(prev => [item, ...prev]); else setDatedNews(prev => [item, ...prev]);
     setShowAddNewsModal(false);
     setShowSuccessModal(true);
-    setTimeout(() => setShowSuccessModal(false), 2000);
-    setFormData({ date: '', time: '', title: '', description: '', photo: null });
+      setTimeout(() => setShowSuccessModal(false), 2000);
+      setFormData({ date: '', time: '', title: '', description: '', photo: null });
+    } catch (err) {
+      setError(String(err.message || err));
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -79,6 +87,36 @@ const News = () => {
   }, []);
 
   const sidebarWidthPx = sidebarExpanded ? 200 : 60;
+
+  // Fetch news and split into trending and dated
+  const fetchNews = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const data = await getNews({ skip, limit });
+      const items = Array.isArray(data) ? data : data.items || [];
+      const trending = [];
+      const dated = [];
+      items.forEach((n) => {
+        const entry = {
+          date: (n.date || '').toString(),
+          title: n.title || '-',
+          location: n.description || '',
+          time: n.time || '',
+          img: newsThumbWater
+        };
+        if ((entry.date || '').toLowerCase() === 'trending') trending.push(entry); else dated.push(entry);
+      });
+      setTrendingNews(trending);
+      setDatedNews(dated);
+    } catch (err) {
+      setError(String(err.message || err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchNews(); /* eslint-disable-next-line */ }, [skip, limit]);
 
   return (
     <div className="min-h-screen bg-[#f5f5f5] font-[Inter,Segoe_UI,Tahoma,Geneva,Verdana,sans-serif]">
@@ -179,6 +217,14 @@ const News = () => {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
               Add News
             </button>
+          <div className="mt-3 flex items-center gap-3">
+            <button className="px-3 py-2 text-sm rounded bg-white border border-gray-300 hover:bg-gray-50" onClick={fetchNews}>Refresh</button>
+            <label className="text-sm text-gray-600">Page size:
+              <select className="ml-2 border border-gray-300 rounded px-2 py-1 text-sm" value={limit} onChange={(e)=> setLimit(Number(e.target.value))}>
+                {[10,25,50,100].map(n => <option key={n} value={n}>{n}</option>)}
+              </select>
+            </label>
+          </div>
           </div>
 
           {/* Search and Filter */}
@@ -266,7 +312,9 @@ const News = () => {
               <div className="mb-8 rounded-xl border shadow-lg" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>
                 <div className="px-4 py-3 border-b border-gray-200"><h2 className="text-xl font-bold text-gray-800 m-0">Trending News</h2></div>
                 <div className="flex flex-col gap-3 p-4">
-                  {trendingFiltered.map((it, i) => (
+                  {loading ? (
+                    <div className="text-sm text-gray-500">Loading...</div>
+                  ) : trendingFiltered.map((it, i) => (
                     <div key={`tr-${i}`} className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 flex items-center gap-4">
                       <div className="w-[80px] h-[80px] rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
                         <img src={it.img} alt="News" className="w-full h-full object-cover" />
@@ -319,8 +367,8 @@ const News = () => {
                   <label className="block text-xs font-medium text-gray-600 mb-1" htmlFor="date">Date</label>
                   <div className="relative">
                     <input type="date" className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" id="date" name="date" value={formData.date} onChange={handleInputChange} required />
-                  </div>
                 </div>
+              </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1" htmlFor="time">Time</label>
                   <input type="time" className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" id="time" name="time" value={formData.time} onChange={handleInputChange} required />

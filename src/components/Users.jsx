@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import fullLogo from '../assets/Images/fulllogo.png';
 import apImage from '../assets/Images/AP.png';
 import filterIcon from '../assets/icons/filter.png'
+import { getAuthHeaders } from '../utils/auth';
 
 const Users = () => {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
@@ -19,6 +20,18 @@ const Users = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showEditUserModal, setShowEditUserModal] = useState(false);
   const [editIndex, setEditIndex] = useState(-1);
+  const [editLoading, setEditLoading] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editError, setEditError] = useState('');
+  const [searchEmail, setSearchEmail] = useState('');
+  const [searchingByEmail, setSearchingByEmail] = useState(false);
+  const [searchError, setSearchError] = useState('');
+  const [showDeleteSuccessModal, setShowDeleteSuccessModal] = useState(false);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [deletedUserName, setDeletedUserName] = useState('');
+  const [userToDelete, setUserToDelete] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     role: '',
@@ -27,16 +40,12 @@ const Users = () => {
     department: ''
   });
   const [editFormData, setEditFormData] = useState({ id: '', name: '', role: '', email: '', department: '' });
-  const [users, setUsers] = useState([
-    ['GV101','Surya','surya@gmail.com','Electricity','Lineman'],
-    ['user2101','Anil','anil@gmail.com','Water','Incharge'],
-    ['user2102','Manohar','manohar@gmail.com','Road','Safety Checker'],
-    ['user2103','Revanth','revanth@gmail.com','Electricity','Lineman'],
-    ['user2104','Poorna','poorna@gmail.com','Water','Supplier'],
-    ['GV101','Karthik','karthik@gmail.com','Road','Safety checker'],
-    ['GV101','Praveen','praveen@gmail.com','Water','Supplier'],
-    ['GV101','Surya','surya@gmail.com','Electricity','Lineman'],
-  ]);
+  const [users, setUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [usersError, setUsersError] = useState('');
+  const [skip, setSkip] = useState(0);
+  const [limit, setLimit] = useState(25);
+  const [adminMode, setAdminMode] = useState(false);
   const profileRef = useRef(null);
 
   const toggleSidebar = () => {
@@ -65,6 +74,75 @@ const Users = () => {
     };
   }, []);
 
+  // Fetch users from API
+  const fetchUsers = async (pageSkip = skip, pageLimit = limit) => {
+    try {
+      setLoadingUsers(true);
+      setUsersError('');
+      const params = new URLSearchParams({ skip: String(pageSkip), limit: String(pageLimit) });
+      const base = adminMode ? '/api/users/admin/all' : '/api/users';
+      const response = await fetch(`${base}?${params.toString()}`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+      });
+      if (response.ok) {
+        const data = await response.json();
+        // Map API users to table rows: [ID, Name, Email, Department, Role]
+        const mapped = (Array.isArray(data) ? data : data.items || []).map((u) => [
+          u.id || u.userId || u.voterId || '-',
+          [u.firstName, u.lastName].filter(Boolean).join(' ') || u.name || '-',
+          u.email || '-',
+          u.department || u.departmentName || '-',
+          u.role || u.roleName || '-'
+        ]);
+        setUsers(mapped);
+      } else {
+        const err = await response.text();
+        setUsersError(err || 'Failed to load users');
+      }
+    } catch (e) {
+      setUsersError('Network error. Please try again.');
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers(0, limit);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [limit]);
+
+  const fetchUserByEmail = async (email) => {
+    if (!email) return;
+    try {
+      setSearchingByEmail(true);
+      setSearchError('');
+      const response = await fetch(`/api/users/by-email/${encodeURIComponent(email)}`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+      });
+      if (response.ok) {
+        const u = await response.json();
+        const row = [
+          u.id || u.userId || u.voterId || '-',
+          [u.firstName, u.lastName].filter(Boolean).join(' ') || u.name || '-',
+          u.email || '-',
+          u.department || u.departmentName || '-',
+          u.role || u.roleName || '-'
+        ];
+        setUsers([row]);
+        setSkip(0);
+      } else {
+        const err = await response.text();
+        setSearchError(err || 'No user found with that email');
+      }
+    } catch (e) {
+      setSearchError('Network error while searching by email');
+    } finally {
+      setSearchingByEmail(false);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -85,12 +163,41 @@ const Users = () => {
     setFormData({ name: '', role: '', email: '', address: '', department: '' });
   };
 
-  const openEditModalForRow = (row) => {
+  // Fetch user by ID and open edit modal
+  const openEditModalForRow = async (row) => {
     const idx = users.indexOf(row);
     if (idx === -1) return;
     setEditIndex(idx);
-    setEditFormData({ id: users[idx][0], name: users[idx][1], email: users[idx][2], department: users[idx][3], role: users[idx][4] });
+    setEditError('');
     setShowEditUserModal(true);
+    setEditLoading(true);
+    const userId = users[idx][0];
+    try {
+      const response = await fetch(`/api/users/${encodeURIComponent(userId)}`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+      });
+      if (response.ok) {
+        const u = await response.json();
+        setEditFormData({
+          id: u.id || u.userId || userId,
+          name: [u.firstName, u.lastName].filter(Boolean).join(' ') || u.name || users[idx][1],
+          email: u.email || users[idx][2],
+          department: u.department || u.departmentName || users[idx][3],
+          role: u.role || u.roleName || users[idx][4]
+        });
+      } else {
+        const err = await response.text();
+        setEditError(err || 'Failed to fetch user details');
+        // fallback to current row data
+        setEditFormData({ id: users[idx][0], name: users[idx][1], email: users[idx][2], department: users[idx][3], role: users[idx][4] });
+      }
+    } catch (e) {
+      setEditError('Network error while fetching user');
+      setEditFormData({ id: users[idx][0], name: users[idx][1], email: users[idx][2], department: users[idx][3], role: users[idx][4] });
+    } finally {
+      setEditLoading(false);
+    }
   };
 
   const handleEditInputChange = (e) => {
@@ -98,23 +205,89 @@ const Users = () => {
     setEditFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleEditSubmit = (e) => {
+  const handleEditSubmit = async (e) => {
     e.preventDefault();
-    setUsers((prev) => prev.map((u, i) => i === editIndex ? [editFormData.id, editFormData.name, editFormData.email, editFormData.department, editFormData.role] : u));
-    setShowEditUserModal(false);
-    setEditIndex(-1);
+    if (editIndex === -1) return;
+    setEditError('');
+    setSavingEdit(true);
+    try {
+      // Prepare payload according to available fields
+      const [firstName, ...rest] = (editFormData.name || '').split(' ');
+      const lastName = rest.join(' ');
+      const payload = {
+        firstName: firstName || undefined,
+        lastName: lastName || undefined,
+        email: editFormData.email || undefined,
+        department: editFormData.department || undefined,
+        role: editFormData.role || undefined,
+      };
+      const response = await fetch(`/api/users/${encodeURIComponent(editFormData.id)}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload)
+      });
+      if (response.ok) {
+        const u = await response.json();
+        const updatedRow = [
+          u.id || u.userId || editFormData.id,
+          [u.firstName, u.lastName].filter(Boolean).join(' ') || u.name || editFormData.name,
+          u.email || editFormData.email,
+          u.department || u.departmentName || editFormData.department,
+          u.role || u.roleName || editFormData.role
+        ];
+        setUsers((prev) => prev.map((row, i) => i === editIndex ? updatedRow : row));
+        setShowEditUserModal(false);
+        setEditIndex(-1);
+      } else {
+        const err = await response.text();
+        setEditError(err || 'Failed to update user');
+      }
+    } catch (err) {
+      setEditError('Network error while updating user');
+    } finally {
+      setSavingEdit(false);
+    }
   };
 
   const handleDeleteRow = (row) => {
-    const userName = row[1]; // Get the user's name
-    const confirmed = window.confirm(`Are you sure you want to delete ${userName}?`);
-    
-    if (confirmed) {
-      const idx = users.indexOf(row);
-      if (idx !== -1) {
-        setUsers((prev) => prev.filter((_, i) => i !== idx));
+    setUserToDelete(row);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!userToDelete) return;
+    const idx = users.indexOf(userToDelete);
+    const id = userToDelete[0];
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      const response = await fetch(`/api/users/${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+      if (response.ok) {
+        if (idx !== -1) {
+          setUsers((prev) => prev.filter((_, i) => i !== idx));
+        }
+        setDeletedUserName(userToDelete[1]);
+        setShowDeleteSuccessModal(true);
+        setTimeout(() => setShowDeleteSuccessModal(false), 3000);
+        setShowDeleteConfirmModal(false);
+        setUserToDelete(null);
+      } else {
+        const err = await response.text();
+        setDeleteError(err || 'Failed to delete user');
       }
+    } catch (e) {
+      setDeleteError('Network error while deleting user');
+    } finally {
+      setDeleting(false);
     }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteConfirmModal(false);
+    setUserToDelete(null);
   };
 
   const handleCloseModal = () => {
@@ -315,6 +488,22 @@ const Users = () => {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             Add Users
           </button>
+          <div className="flex items-center gap-2">
+            <button className="px-3 py-2 text-sm rounded bg-white border border-gray-300 hover:bg-gray-50" onClick={() => fetchUsers(skip, limit)}>Refresh</button>
+            <label className="text-sm text-gray-600">Page size:
+              <select className="ml-2 border border-gray-300 rounded px-2 py-1 text-sm" value={limit} onChange={(e)=> setLimit(Number(e.target.value))}>
+                {[10,25,50,100].map(n => <option key={n} value={n}>{n}</option>)}
+              </select>
+            </label>
+            <label className="text-sm text-gray-600 ml-2">Admin mode:
+              <input type="checkbox" className="ml-2 align-middle" checked={adminMode} onChange={(e)=>{ setAdminMode(e.target.checked); setSkip(0); fetchUsers(0, limit); }} />
+            </label>
+            <div className="ml-2 flex items-center gap-2">
+              <button className="px-2 py-1 text-sm rounded bg-white border border-gray-300 disabled:opacity-50" disabled={skip===0 || loadingUsers} onClick={()=>{ const next = Math.max(0, skip - limit); setSkip(next); fetchUsers(next, limit); }}>Prev</button>
+              <button className="px-2 py-1 text-sm rounded bg-white border border-gray-300 disabled:opacity-50" disabled={loadingUsers} onClick={()=>{ const next = skip + limit; setSkip(next); fetchUsers(next, limit); }}>Next</button>
+            </div>
+          </div>
+          {usersError && <div className="text-sm text-red-600">{usersError}</div>}
         </div>
 
         {/* Search and Filter */}
@@ -322,8 +511,11 @@ const Users = () => {
           <div className="flex items-center gap-3 relative">
             <div className="flex items-center rounded-md px-3 py-2 transition overflow-hidden shadow-sm bg-white border border-gray-300" style={{ width: '320px' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500 mr-2 shrink-0"><circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.35-4.35"></path></svg>
-              <input type="text" placeholder="Search" className="border-0 outline-none text-sm text-gray-700 bg-transparent w-full placeholder:text-gray-400" />
+              <input type="email" value={searchEmail} onChange={(e)=>setSearchEmail(e.target.value)} placeholder="Search by email" className="border-0 outline-none text-sm text-gray-700 bg-transparent w-full placeholder:text-gray-400" />
             </div>
+            <button className="px-3 py-2 bg-white border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50" disabled={searchingByEmail || !searchEmail} onClick={()=>fetchUserByEmail(searchEmail)}>
+              {searchingByEmail ? 'Searching...' : 'Search'}
+            </button>
             <button type="button" onClick={()=>setShowFilter((s)=>!s)} className="w-10 h-10 flex items-center justify-center rounded-md cursor-pointer hover:bg-white/90 shadow-sm" style={{ backgroundColor: 'rgba(255,255,255,0.6)', border: '1px solid rgba(209,213,219,0.6)' }}>
               <img src={filterIcon} alt="Filter" className="w-10 h-10" />
             </button>
@@ -377,6 +569,7 @@ const Users = () => {
             </div>
               </div>
             )}
+            {searchError && <div className="absolute left-0 top-12 text-sm text-red-600">{searchError}</div>}
           </div>
         </div>
 
@@ -393,7 +586,11 @@ const Users = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredUsers.map((row, idx) => (
+                {loadingUsers ? (
+                  <tr><td colSpan={6} className="px-4 py-6 text-center text-sm text-gray-600">Loading users...</td></tr>
+                ) : filteredUsers.length === 0 ? (
+                  <tr><td colSpan={6} className="px-4 py-6 text-center text-sm text-gray-600">No users found.</td></tr>
+                ) : filteredUsers.map((row, idx) => (
                   <tr key={idx} className="hover:bg-white/50">
                     {row.map((cell, cidx) => (
                       <td key={cidx} className="px-4 py-3 text-sm text-gray-700 border-b border-gray-100" style={{ backgroundColor: 'rgba(255,255,255,0.6)' }}>{cell}</td>
@@ -423,6 +620,8 @@ const Users = () => {
               </button>
             </div>
             <form onSubmit={handleEditSubmit} className="px-6 py-4">
+              {editError && <div className="mb-3 p-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded">{editError}</div>}
+              {editLoading && <div className="mb-3 text-sm text-gray-600">Loading user details...</div>}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-medium text-gray-600 mb-1">User ID</label>
@@ -446,9 +645,9 @@ const Users = () => {
                 </div>
               </div>
               <div className="flex gap-3 mt-6">
-                <button type="submit" className="bg-blue-600 text-white px-5 py-2.5 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-blue-700">
+                <button type="submit" disabled={savingEdit} className="bg-blue-600 text-white px-5 py-2.5 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20,6 9,17 4,12"></polyline></svg>
-                  Save Changes
+                  {savingEdit ? 'Saving...' : 'Save Changes'}
                 </button>
                 <button type="button" className="bg-gray-100 text-gray-700 px-5 py-2.5 rounded-full text-sm font-medium hover:bg-gray-200" onClick={() => setShowEditUserModal(false)}>Cancel</button>
               </div>
@@ -502,13 +701,82 @@ const Users = () => {
         </div>
       )}
 
-       {/* Success Modal */}
-       {showSuccessModal && (
+       {/* Delete Confirmation Modal */}
+       {showDeleteConfirmModal && (
+         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000]" onClick={cancelDelete}>
+           <div className="bg-white rounded-lg shadow-2xl relative w-96 max-w-[90vw] mx-4" onClick={(e) => e.stopPropagation()}>
+             <div className="p-6">
+              {deleteError && <div className="mb-3 p-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded">{deleteError}</div>}
+               <div className="flex items-center gap-4 mb-4">
+                 <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red-600">
+                     <path d="M3 6h18"></path>
+                     <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                     <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                     <line x1="10" y1="11" x2="10" y2="17"></line>
+                     <line x1="14" y1="11" x2="14" y2="17"></line>
+                   </svg>
+                 </div>
+                 <div className="flex-1">
+                   <h3 className="text-lg font-semibold text-gray-900 mb-1">Delete User</h3>
+                   <p className="text-sm text-gray-600">
+                     Are you sure you want to delete <strong>{userToDelete?.[1]}</strong>? This action cannot be undone.
+                   </p>
+                 </div>
+               </div>
+               <div className="flex gap-3 justify-end">
+                 <button 
+                   onClick={cancelDelete}
+                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                 >
+                   Cancel
+                 </button>
+                 <button 
+                  onClick={confirmDelete}
+                  disabled={deleting}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors disabled:opacity-50"
+                 >
+                  {deleting ? 'Deleting...' : 'Delete'}
+                 </button>
+               </div>
+             </div>
+           </div>
+         </div>
+       )}
+
+       {/* Delete Success Modal */}
+       {showDeleteSuccessModal && (
+         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[1000]" onClick={() => setShowDeleteSuccessModal(false)}>
+           <div className="bg-white rounded-xl p-12 text-center shadow-2xl relative w-96 max-w-[90vw]" onClick={(e) => e.stopPropagation()}>
+             <button className="absolute top-4 right-4 p-2 rounded-full text-gray-500 hover:bg-gray-100 transition-colors" onClick={() => setShowDeleteSuccessModal(false)}>
+               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+             </button>
+             <div className="flex flex-col items-center gap-6">
+               <div className="flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600">
+                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                   <path d="M3 6h18"></path>
+                   <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                   <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                   <line x1="10" y1="11" x2="10" y2="17"></line>
+                   <line x1="14" y1="11" x2="14" y2="17"></line>
+                 </svg>
+               </div>
+               <div className="text-center">
+                 <h3 className="text-red-600 text-xl font-semibold mb-2">User Deleted Successfully</h3>
+                 <p className="text-gray-600 text-sm">User <strong>{deletedUserName}</strong> has been removed from the system</p>
+               </div>
+             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[1000]" onClick={() => setShowSuccessModal(false)}>
            <div className="bg-white rounded-xl p-12 text-center shadow-2xl relative w-96 max-w-[90vw]" onClick={(e) => e.stopPropagation()}>
              <button className="absolute top-4 right-4 p-2 rounded-full text-gray-500 hover:bg-gray-100 transition-colors" onClick={() => setShowSuccessModal(false)}>
                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-             </button>
+            </button>
              <div className="flex flex-col items-center gap-6">
                <div className="flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600">
                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20,6 9,17 4,12"></polyline></svg>
@@ -516,11 +784,11 @@ const Users = () => {
                <div className="text-center">
                  <h3 className="text-emerald-600 text-xl font-semibold mb-2">User Added Successfully</h3>
                  <p className="text-gray-600 text-sm">The user has been added to the system</p>
-               </div>
-             </div>
-           </div>
-         </div>
-       )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

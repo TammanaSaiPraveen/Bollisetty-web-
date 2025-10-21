@@ -8,8 +8,10 @@ import waterSupplyImg from '../assets/Images/Water_Supply1.png';
 import potholesImg from '../assets/Images/potholes.png';
 import activeVotersIcon from '../assets/icons/Frame 1321318358.png';
 import ongoingProcessIcon from '../assets/icons/Frame 1321318358 (2).png';
+import { useUser } from '../contexts/UserContext';
 
 const Dashboard = () => {
+  const { user, loading, handleLogout } = useUser();
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [planExpanded, setPlanExpanded] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -28,6 +30,7 @@ const Dashboard = () => {
   const toggleProfileDropdown = () => {
     setShowProfileDropdown(!showProfileDropdown);
   };
+
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -105,6 +108,29 @@ const Dashboard = () => {
             </svg>
             {showProfileDropdown && (
               <div className="absolute top-full right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-[1000] mt-2 min-w-48 overflow-hidden">
+                {/* User Info Header */}
+                {user && (
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        {user.profilePictureUrl ? (
+                          <img src={user.profilePictureUrl} alt="Profile" className="w-8 h-8 rounded-full object-cover" />
+                        ) : (
+                          <span className="text-blue-600 text-sm font-medium">
+                            {user.firstName?.[0] || user.email?.[0] || 'U'}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email || 'User'}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 <Link to="/profile" className="flex items-center gap-3 px-4 py-3 text-gray-700 cursor-pointer text-sm font-medium hover:bg-gray-100">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -122,12 +148,33 @@ const Dashboard = () => {
                   </svg>
                   <span>My Posts</span>
                 </Link>
+                <Link to="/admin" className="flex items-center gap-3 px-4 py-3 text-gray-700 cursor-pointer text-sm font-medium hover:bg-gray-100">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                  </svg>
+                  <span>Admin Panel</span>
+                </Link>
                 <div className="flex items-center gap-3 px-4 py-3 text-gray-700 cursor-pointer text-sm font-medium hover:bg-gray-100">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500">
                     <circle cx="12" cy="12" r="3"></circle>
                     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                   </svg>
                   <span>Settings</span>
+                </div>
+                
+                {/* Logout Button */}
+                <div className="border-t border-gray-100">
+                  <button 
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-red-600 cursor-pointer text-sm font-medium hover:bg-red-50"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red-500">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                      <polyline points="16,17 21,12 16,7"></polyline>
+                      <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span>Logout</span>
+                  </button>
                 </div>
               </div>
             )}
@@ -145,64 +192,64 @@ const Dashboard = () => {
           <div className="w-5 h-0.5 bg-gray-800"></div>
           <div className="w-5 h-0.5 bg-gray-800"></div>
           <div className="w-5 h-0.5 bg-gray-800"></div>
-        </div>
+            </div>
 
         {/* Navigation Items */}
         <nav className="flex-1 flex flex-col py-2">
           <div className="flex items-center p-4 text-gray-800 relative border-none bg-white">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0">
-              <rect x="3" y="3" width="7" height="7"></rect>
-              <rect x="14" y="3" width="7" height="7"></rect>
-              <rect x="14" y="14" width="7" height="7"></rect>
-              <rect x="3" y="14" width="7" height="7"></rect>
-            </svg>
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
             <span className={`ml-3 text-sm font-medium whitespace-nowrap transition-all ${sidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>Dashboard</span>
-          </div>
+              </div>
 
           <Link to="/users" className="flex items-center p-4 text-gray-800 hover:bg-white/30">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
             <span className={`ml-3 text-sm font-medium whitespace-nowrap transition-all ${sidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>Manage Users</span>
-          </Link>
+                  </Link>
 
           <Link to="/grievances" className="flex items-center p-4 text-gray-800 hover:bg-white/30">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14,2 14,8 20,8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-              <polyline points="10,9 9,9 8,9"></polyline>
-            </svg>
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14,2 14,8 20,8"></polyline>
+                      <line x1="16" y1="13" x2="8" y2="13"></line>
+                      <line x1="16" y1="17" x2="8" y2="17"></line>
+                      <polyline points="10,9 9,9 8,9"></polyline>
+                    </svg>
             <span className={`ml-3 text-sm font-medium whitespace-nowrap transition-all ${sidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>Grievances</span>
-          </Link>
+                  </Link>
 
           <div className="flex items-center p-4 text-gray-800 hover:bg-white/30 cursor-pointer relative" onClick={togglePlanSubmenu}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
             <span className={`ml-3 text-sm font-medium whitespace-nowrap transition-all ${sidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>Plan</span>
             {sidebarExpanded && (
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
+              <svg 
+                width="16" 
+                height="16" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
                 className={`ml-auto transition-transform ${planExpanded ? 'rotate-180' : ''}`}
               >
-                <polyline points="6,9 12,15 18,9"></polyline>
-              </svg>
+                  <polyline points="6,9 12,15 18,9"></polyline>
+                </svg>
             )}
-          </div>
-
+        </div>
+          
           {planExpanded && sidebarExpanded && (
             <div className="ml-5 mt-1 flex flex-col gap-1">
               <Link to="/schedule" className="flex items-center px-4 py-3 text-sm bg-white/10 rounded-md mx-2 hover:bg-white/20">
@@ -211,20 +258,20 @@ const Dashboard = () => {
                   <line x1="16" y1="2" x2="16" y2="6"></line>
                   <line x1="8" y1="2" x2="8" y2="6"></line>
                   <line x1="3" y1="10" x2="21" y2="10"></line>
-                </svg>
+            </svg>
                 <span className="ml-3 text-sm font-medium">Schedule</span>
-              </Link>
+          </Link>
               <Link to="/news" className="flex items-center px-4 py-3 text-sm bg-white/10 rounded-md mx-2 hover:bg-white/20">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14,2 14,8 20,8"></polyline>
-                  <line x1="16" y1="13" x2="8" y2="13"></line>
-                  <line x1="16" y1="17" x2="8" y2="17"></line>
-                  <polyline points="10,9 9,9 8,9"></polyline>
-                </svg>
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14,2 14,8 20,8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10,9 9,9 8,9"></polyline>
+            </svg>
                 <span className="ml-3 text-sm font-medium">New</span>
-              </Link>
-            </div>
+          </Link>
+          </div>
           )}
 
           <Link to="/development" className="flex items-center p-4 text-gray-800 hover:bg-white/30">
@@ -240,18 +287,21 @@ const Dashboard = () => {
 
         {/* Logout Button - positioned at bottom */}
         <div className="mt-auto p-2">
-          <div className="flex items-center justify-center p-4 text-gray-800 rounded-md hover:bg-white/30">
+          <button 
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center p-4 text-gray-800 rounded-md hover:bg-white/30 transition-colors"
+          >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
               <polyline points="16,17 21,12 16,7"></polyline>
               <line x1="21" y1="12" x2="9" y2="12"></line>
             </svg>
             <span className={`ml-3 text-sm font-medium whitespace-nowrap transition-all ${sidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>Logout</span>
-          </div>
+          </button>
         </div>
-      </aside>
+        </aside>
 
-      {/* Main Content */}
+        {/* Main Content */}
       <main
         className="relative z-[1] min-h-screen p-8 pt-20 transition-all"
         style={{ marginLeft: sidebarWidthPx, backgroundImage: `url(${apImage})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}
@@ -259,7 +309,7 @@ const Dashboard = () => {
         {/* Dashboard Header */}
         <div className="mb-6">
           <h1 className="text-[1.75rem] font-bold text-gray-800 m-0">Dashboard</h1>
-        </div>
+          </div>
 
         {/* Dashboard Content */}
         <div className="mb-8">
@@ -278,7 +328,7 @@ const Dashboard = () => {
                     <p className="text-2xl font-bold text-emerald-500 m-0 leading-none">30000</p>
                   </div>
                 </div>
-
+                
                 <div className="rounded-xl p-6 shadow-md flex items-center gap-4 flex-1" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>
                   <div className="flex items-center justify-center">
                     <img src={ongoingProcessIcon} alt="Ongoing Process" className="w-12 h-12 object-contain" />
@@ -302,7 +352,7 @@ const Dashboard = () => {
                   </div>
                   <div className="h-px bg-gray-200 w-full"></div>
                 </div>
-
+                
                 <div className="flex flex-col gap-4">
                   <div className="rounded-xl p-4 shadow-sm flex items-center gap-4 border border-gray-100" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>
                     <div className="w-15 h-15 rounded-lg overflow-hidden">
@@ -313,7 +363,7 @@ const Dashboard = () => {
                       <p className="text-sm text-gray-500 m-0">Submitted on 29 Jul 2025</p>
                     </div>
                   </div>
-
+                  
                   <div className="rounded-xl p-4 shadow-sm flex items-center gap-4 border border-gray-100" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>
                     <div className="w-15 h-15 rounded-lg overflow-hidden">
                       <img src={waterSupplyImg} alt="Water Supply" className="w-[60px] h-[60px] object-cover block rounded" />
@@ -323,7 +373,7 @@ const Dashboard = () => {
                       <p className="text-sm text-gray-500 m-0">Submitted on 02 Aug 2025</p>
                     </div>
                   </div>
-
+                  
                   <div className="rounded-xl p-4 shadow-sm flex items-center gap-4 border border-gray-100" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>
                     <div className="w-15 h-15 rounded-lg overflow-hidden">
                       <img src={potholesImg} alt="Potholes" className="w-[60px] h-[60px] object-cover block rounded" />
@@ -337,9 +387,9 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Top Right Section - Calendar + Schedule + News */}
+             {/* Top Right Section - Calendar + Schedule + News */}
             <div className="grid grid-cols-1 md:grid-cols-2 grid-rows-[auto_auto] gap-8">
-              {/* Calendar Widget */}
+               {/* Calendar Widget */}
               <div className="bg-gray-900 rounded-xl p-6 text-white relative h-[300px] overflow-hidden">
                 <div className="flex items-center justify-between mb-3">
                   <button onClick={goPrevMonth} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10" aria-label="Previous Month">
@@ -349,13 +399,13 @@ const Dashboard = () => {
                   <button onClick={goNextMonth} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10" aria-label="Next Month">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9,18 15,12 9,6"></polyline></svg>
                   </button>
-                </div>
+                 </div>
                 <div className="h-[calc(100%-2.5rem)] overflow-hidden">
                   <div className="grid grid-cols-7 gap-1 mb-1 text-[10px] md:text-xs text-gray-300">
                     {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((d) => (
                       <div key={`wd-${d}`} className="text-center font-medium leading-none py-1">{d}</div>
                     ))}
-                  </div>
+                   </div>
                   <div className="grid grid-cols-7 gap-1">
                     {Array.from({ length: firstWeekday }).map((_, i) => (
                       <div key={`lead-${i}`} className="aspect-square" />
@@ -369,42 +419,42 @@ const Dashboard = () => {
                           className={`text-center p-2 text-[11px] md:text-sm rounded-md aspect-square flex items-center justify-center ${isToday ? 'bg-blue-500 text-white ring-2 ring-white' : 'text-white/90 hover:bg-white/10'}`}
                         >
                           {dayNum}
-                        </div>
+                     </div>
                       );
                     })}
-                  </div>
-                </div>
-              </div>
+                   </div>
+                 </div>
+               </div>
 
-              {/* Today's Schedule Section */}
+               {/* Today's Schedule Section */}
               <div className="border border-white/60 rounded-2xl p-4 shadow-lg flex flex-col backdrop-blur-sm h-[300px] overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>
                 <div className="flex items-center justify-between mb-2">
                   <h2 className="text-xl font-bold text-gray-800 m-0">Today's Schedule</h2>
                   <Link to="/schedule" className="text-sm text-gray-500 cursor-pointer hover:text-gray-700 transition-colors">View More</Link>
-                </div>
+                 </div>
                 <div className="flex flex-col gap-2 justify-start">
                   <div className="rounded-xl shadow-md border border-gray-200 px-3 py-2" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>
                     <h4 className="text-[14px] font-semibold text-gray-900 m-0 mb-0.5">Meet at CM Camp Office</h4>
                     <p className="text-[11px] text-gray-500 m-0">Location: Velangapudi, Amaravathi, AP</p>
                     <p className="text-[11px] text-gray-500 m-0 mt-0.5">09:00 AM - 12:00PM</p>
-                  </div>
+                   </div>
                   <div className="rounded-xl shadow-md border border-gray-200 px-3 py-2" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>
                     <h4 className="text-[14px] font-semibold text-gray-900 m-0 mb-0.5">Farmers</h4>
                     <p className="text-[11px] text-gray-500 m-0">09:00 AM - 12:00PM</p>
-                  </div>
+                   </div>
                   <div className="rounded-xl shadow-md border border-gray-200 px-3 py-2" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>
                     <h4 className="text-[14px] font-semibold text-gray-900 m-0 mb-0.5">Farmers</h4>
                     <p className="text-[11px] text-gray-500 m-0">09:00 AM - 12:00PM</p>
-                  </div>
-                </div>
-              </div>
+                   </div>
+                 </div>
+               </div>
 
-              {/* News Section */}
+               {/* News Section */}
               <div className="rounded-xl p-4 backdrop-saturate-[1.2] backdrop-blur-[2px] md:col-span-2 mb-0" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>
                 <div className="flex items-center justify-between mb-2">
                   <h2 className="text-xl font-bold text-gray-800 m-0">News</h2>
                   <Link to="/news" className="text-sm text-gray-500 cursor-pointer hover:text-gray-700 transition-colors">View More</Link>
-                </div>
+                 </div>
                 <div className="rounded-lg p-3 shadow-sm flex items-center gap-4 border border-gray-100 mb-0" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>
                   <div className="w-[60px] h-[60px] rounded-lg overflow-hidden">
                     <img src={waterSupplyImg} alt="Water Supply" className="w-full h-full object-cover block" />
@@ -414,8 +464,8 @@ const Dashboard = () => {
                     <p className="text-sm text-gray-500 m-0">Submitted on 02 Aug 2025</p>
                   </div>
                 </div>
-              </div>
-            </div>
+               </div>
+             </div>
 
             {/* Bottom Section - Grievances Table */}
             <div className="md:col-span-2 flex flex-col">
@@ -423,7 +473,7 @@ const Dashboard = () => {
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold text-gray-800 m-0">Grievances</h2>
                   <Link to="/grievances" className="text-sm text-gray-500 cursor-pointer hover:text-gray-700 transition-colors">View More</Link>
-                </div>
+                  </div>
                 <div className="rounded-xl overflow-hidden">
                   <table className="w-full border-collapse bg-transparent">
                     <thead>
@@ -448,16 +498,16 @@ const Dashboard = () => {
                           {row.map((cell, cidx) => (
                             <td key={cidx} className="px-4 py-4 border-b border-gray-200 text-gray-700 backdrop-saturate-[1.2] backdrop-blur-[2px]" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>{cell}</td>
                           ))}
-                        </tr>
+                      </tr>
                       ))}
                     </tbody>
                   </table>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
     </div>
   );
 };

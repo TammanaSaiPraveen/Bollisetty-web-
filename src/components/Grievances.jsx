@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import fullLogo from '../assets/Images/fulllogo.png';
 import apImage from '../assets/Images/AP.png';
 import filterIcon from '../assets/icons/filter.png'
+import { getGrievances, createGrievance, updateGrievance, deleteGrievance, addGrievanceComment, getGrievanceComments, assignGrievance, getGrievanceStatsSummary, getAdminGrievancesAll, getAdminGrievancesOngoing, updateGrievanceStatusAdmin } from '../utils/auth';
 
 // Solid pie chart with SVG paths (closer to screenshot)
 const PieChart = ({ size = 200, data = [] }) => {
@@ -85,6 +86,7 @@ const Grievances = () => {
   const [selectedStatuses, setSelectedStatuses] = useState([]);
   const [showAddGrievanceModal, setShowAddGrievanceModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [adminMode, setAdminMode] = useState(false);
   const [formData, setFormData] = useState({
     constituency: '',
     department: '',
@@ -93,6 +95,12 @@ const Grievances = () => {
     description: '',
     photo: null
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [skip, setSkip] = useState(0);
+  const [limit, setLimit] = useState(25);
+  const [statusFilter, setStatusFilter] = useState('');
+  const [priorityFilter, setPriorityFilter] = useState('');
   
   const profileRef = useRef(null);
 
@@ -118,20 +126,35 @@ const Grievances = () => {
     setFormData(prev => ({ ...prev, photo: file }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Build a new grievance row from form inputs
-    const newRow = {
-      id: `GV${String(grievances.length + 101).padStart(3, '0')}`,
-      title: formData.title || 'New Grievance',
-      area: formData.constituency || 'N/A',
-      department: formData.department || 'N/A',
-      status: 'Ongoing'
-    };
-    setGrievances((prev) => [newRow, ...prev]);
+    try {
+      setLoading(true);
+      setError('');
+      const payload = {
+        title: formData.title,
+        description: formData.description,
+        department: formData.department,
+        address: formData.address,
+        constituency: formData.constituency
+      };
+      const created = await createGrievance(payload);
+      const mapped = {
+        id: created.id || created.grievanceId || 'N/A',
+        title: created.title,
+        area: created.constituency || created.area || '',
+        department: created.department || '',
+        status: created.status || 'OPEN'
+      };
+      setGrievances((prev) => [mapped, ...prev]);
     setShowAddGrievanceModal(false);
     setShowSuccessModal(true);
-    setTimeout(() => setShowSuccessModal(false), 3000);
+      setTimeout(() => setShowSuccessModal(false), 3000);
+    } catch (err) {
+      setError(String(err.message || err));
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Close dropdown when clicking outside
@@ -159,12 +182,32 @@ const Grievances = () => {
   const PIE_COLORS = { current: '#6D28D9', ongoing: '#F97316', completed: '#22D3EE' };
 
   // Table data and filtering
-  const [grievances, setGrievances] = useState([
-    { id:'GV101', title:'Water Supply Disruption', area:'Tadepaligudem', department:'Water', status:'Ongoing' },
-    { id:'GV101', title:'Water Supply Disruption', area:'Tadepaligudem', department:'Water', status:'Not Stated Yet' },
-    { id:'GV101', title:'Water Supply Disruption', area:'Tadepaligudem', department:'Water', status:'Completed' },
-    { id:'GV101', title:'Water Supply Disruption', area:'Tadepaligudem', department:'Water', status:'Completed' },
-  ]);
+  const [grievances, setGrievances] = useState([]);
+
+  // Fetch grievances from API
+  const fetchAll = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const baseFetch = adminMode ? getAdminGrievancesAll : getGrievances;
+      const data = await baseFetch({ skip, limit, status: statusFilter || undefined, priority: priorityFilter || undefined, constituency: selectedLocations[0] });
+      const items = Array.isArray(data) ? data : data.items || [];
+      const mapped = items.map((g) => ({
+        id: g.id || g.grievanceId || '-',
+        title: g.title || '-',
+        area: g.constituency || g.area || '-',
+        department: g.department || '-',
+        status: g.status || 'OPEN'
+      }));
+      setGrievances(mapped);
+    } catch (err) {
+      setError(String(err.message || err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchAll(); /* eslint-disable-next-line */ }, [skip, limit, statusFilter, priorityFilter, adminMode]);
 
   const STATUS_OPTIONS = ['Ongoing','Not Stated Yet','Completed'];
   const [openStatusRow, setOpenStatusRow] = useState(null);
@@ -200,6 +243,7 @@ const Grievances = () => {
           <div className="flex items-center gap-4">
             <img src={fullLogo} alt="Logo" className="w-[200px] h-auto object-contain" />
           </div>
+          {error && <div className="mb-3 text-sm text-red-600">{error}</div>}
         </div>
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 flex items-center justify-center text-gray-800 cursor-pointer rounded-md transition relative hover:bg-white/10">
@@ -309,6 +353,17 @@ const Grievances = () => {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
               Add Grievances
             </button>
+          <div className="mt-3 flex items-center gap-3">
+            <button className="px-3 py-2 text-sm rounded bg-white border border-gray-300 hover:bg-gray-50" onClick={()=>fetchAll()}>Refresh</button>
+            <label className="text-sm text-gray-600">Page size:
+              <select className="ml-2 border border-gray-300 rounded px-2 py-1 text-sm" value={limit} onChange={(e)=> setLimit(Number(e.target.value))}>
+                {[10,25,50,100].map(n => <option key={n} value={n}>{n}</option>)}
+              </select>
+            </label>
+            <label className="text-sm text-gray-600">Admin mode:
+              <input type="checkbox" className="ml-2 align-middle" checked={adminMode} onChange={(e)=>{ setAdminMode(e.target.checked); setSkip(0); }} />
+            </label>
+          </div>
           </div>
 
           {/* Search and Filter */}
@@ -422,7 +477,11 @@ const Grievances = () => {
                   </tr>
                 </thead>
                 <tbody>
-                {filteredGrievances.map((row, idx) => (
+                {loading ? (
+                  <tr><td colSpan={5} className="px-4 py-6 text-center text-sm text-gray-600">Loading...</td></tr>
+                ) : filteredGrievances.length === 0 ? (
+                  <tr><td colSpan={5} className="px-4 py-6 text-center text-sm text-gray-600">No grievances</td></tr>
+                ) : filteredGrievances.map((row, idx) => (
                   <tr key={idx}>
                     <td className="px-4 py-4 border-b border-gray-200 text-gray-700" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>{row.id}</td>
                     <td className="px-4 py-4 border-b border-gray-200 text-gray-700" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>{row.title}</td>
