@@ -1,5 +1,11 @@
 // Authentication utility functions
 
+// Base URL for API calls
+// Use empty string in development so requests go through Vite proxy (/api -> backend)
+const BASE_URL = (typeof window !== 'undefined' && window.location.hostname === 'localhost')
+  ? ''
+  : 'https://bolisetti-fast-api.onrender.com';
+
 export const getStoredToken = () => {
   return localStorage.getItem('access_token');
 };
@@ -51,7 +57,7 @@ export const getAuthHeaders = () => {
 // Fetch current user information
 export const getCurrentUser = async () => {
   try {
-    const response = await fetch('/api/auth/me', {
+    const response = await fetch(`${BASE_URL}/api/auth/me`, {
       method: 'GET',
       headers: getAuthHeaders()
     });
@@ -76,7 +82,7 @@ export const getCurrentUser = async () => {
 // Get current user's profile (new users service)
 export const getMyProfile = async () => {
   try {
-    const response = await fetch('/api/users/me/profile', {
+    const response = await fetch(`${BASE_URL}/api/users/me/profile`, {
       method: 'GET',
       headers: getAuthHeaders()
     });
@@ -98,7 +104,7 @@ export const getMyProfile = async () => {
 // Update user profile
 export const updateUserProfile = async (profileData) => {
   try {
-    const response = await fetch('/api/auth/profile', {
+    const response = await fetch(`${BASE_URL}/api/auth/profile`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify(profileData)
@@ -128,7 +134,7 @@ export const updateUserProfile = async (profileData) => {
 // Update current user's profile (new users service)
 export const updateMyProfile = async (profileData) => {
   try {
-    const response = await fetch('/api/users/me/profile', {
+    const response = await fetch(`${BASE_URL}/api/users/me/profile`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify(profileData)
@@ -154,7 +160,7 @@ export const updateMyProfile = async (profileData) => {
 // Logout user and invalidate session
 export const logoutUser = async () => {
   try {
-    const response = await fetch('/api/auth/logout', {
+    const response = await fetch(`${BASE_URL}/api/auth/logout`, {
       method: 'POST',
       headers: getAuthHeaders()
     });
@@ -184,7 +190,7 @@ export const logoutUser = async () => {
 // Validate voter ID
 export const validateVoterId = async (voterId) => {
   try {
-    const response = await fetch(`/api/auth/validate-voter-id/${encodeURIComponent(voterId)}`, {
+    const response = await fetch(`${BASE_URL}/api/auth/validate-voter-id/${encodeURIComponent(voterId)}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
@@ -231,57 +237,57 @@ export const getGrievances = async ({ skip = 0, limit = 25, status, priority, co
   if (status) params.set('status_filter', status);
   if (priority) params.set('priority_filter', priority);
   if (constituency) params.set('constituency_filter', constituency);
-  const response = await fetch(`/api/grievances?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/admin/grievances?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const createGrievance = async (payload) => {
-  const response = await fetch('/api/grievances', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+  const response = await fetch(`${BASE_URL}/api/grievances`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const getUserGrievances = async (userId, { skip = 0, limit = 25 } = {}) => {
   const params = new URLSearchParams({ skip: String(skip), limit: String(limit) });
-  const response = await fetch(`/api/grievances/user/${encodeURIComponent(userId)}?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/grievances/user/${encodeURIComponent(userId)}?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const getMyGrievances = async ({ skip = 0, limit = 25 } = {}) => {
   const params = new URLSearchParams({ skip: String(skip), limit: String(limit) });
-  const response = await fetch(`/api/grievances/my?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/grievances/my?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const getGrievanceById = async (grievanceId) => {
-  const response = await fetch(`/api/grievances/${encodeURIComponent(grievanceId)}`, { method: 'GET', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/grievances/${encodeURIComponent(grievanceId)}`, { method: 'GET', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const updateGrievance = async (grievanceId, payload) => {
-  const response = await fetch(`/api/grievances/${encodeURIComponent(grievanceId)}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+  const response = await fetch(`${BASE_URL}/api/grievances/${encodeURIComponent(grievanceId)}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(payload) });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const deleteGrievance = async (grievanceId) => {
-  const response = await fetch(`/api/grievances/${encodeURIComponent(grievanceId)}`, { method: 'DELETE', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/grievances/${encodeURIComponent(grievanceId)}`, { method: 'DELETE', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.text();
 };
 
 export const addGrievanceComment = async (grievanceId, { content, timestamp }) => {
-  const response = await fetch(`/api/grievances/${encodeURIComponent(grievanceId)}/comments`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ content, timestamp }) });
+  const response = await fetch(`${BASE_URL}/api/grievances/${encodeURIComponent(grievanceId)}/comments`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ content, timestamp }) });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const getGrievanceComments = async (grievanceId) => {
-  const response = await fetch(`/api/grievances/${encodeURIComponent(grievanceId)}/comments`, { method: 'GET', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/grievances/${encodeURIComponent(grievanceId)}/comments`, { method: 'GET', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
@@ -289,13 +295,13 @@ export const getGrievanceComments = async (grievanceId) => {
 export const assignGrievance = async (grievanceId, departmentId) => {
   const params = new URLSearchParams();
   if (departmentId) params.set('department_id', departmentId);
-  const response = await fetch(`/api/grievances/assign/${encodeURIComponent(grievanceId)}?${params.toString()}`, { method: 'PUT', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/grievances/assign/${encodeURIComponent(grievanceId)}?${params.toString()}`, { method: 'PUT', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.text();
 };
 
 export const getGrievanceStatsSummary = async () => {
-  const response = await fetch('/api/grievances/stats/summary', { method: 'GET', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/grievances/stats/summary`, { method: 'GET', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
@@ -306,20 +312,20 @@ export const getAdminGrievancesAll = async (opts = {}) => {
   if (status) params.set('status_filter', status);
   if (priority) params.set('priority_filter', priority);
   if (constituency) params.set('constituency_filter', constituency);
-  const response = await fetch(`/api/grievances/admin/all?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/grievances/admin/all?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const getAdminGrievancesOngoing = async ({ skip = 0, limit = 25 } = {}) => {
   const params = new URLSearchParams({ skip: String(skip), limit: String(limit) });
-  const response = await fetch(`/api/grievances/admin/ongoing?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/grievances/admin/ongoing?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const updateGrievanceStatusAdmin = async (grievanceId, status) => {
-  const response = await fetch(`/api/grievances/admin/${encodeURIComponent(grievanceId)}/status`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify({ status }) });
+  const response = await fetch(`${BASE_URL}/api/grievances/admin/${encodeURIComponent(grievanceId)}/status`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify({ status }) });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
@@ -329,45 +335,45 @@ export const getSchedules = async ({ skip = 0, limit = 25, start_date, end_date 
   const params = new URLSearchParams({ skip: String(skip), limit: String(limit) });
   if (start_date) params.set('start_date', start_date);
   if (end_date) params.set('end_date', end_date);
-  const response = await fetch(`/api/schedules?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/schedules?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const createSchedule = async (payload) => {
-  const response = await fetch('/api/schedules', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+  const response = await fetch(`${BASE_URL}/api/schedules`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const getMySchedules = async ({ skip = 0, limit = 25 } = {}) => {
   const params = new URLSearchParams({ skip: String(skip), limit: String(limit) });
-  const response = await fetch(`/api/schedules/my?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/schedules/my?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const getScheduleById = async (scheduleId) => {
-  const response = await fetch(`/api/schedules/${encodeURIComponent(scheduleId)}`, { method: 'GET', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/schedules/${encodeURIComponent(scheduleId)}`, { method: 'GET', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const updateSchedule = async (scheduleId, payload) => {
-  const response = await fetch(`/api/schedules/${encodeURIComponent(scheduleId)}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+  const response = await fetch(`${BASE_URL}/api/schedules/${encodeURIComponent(scheduleId)}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(payload) });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const deleteSchedule = async (scheduleId) => {
-  const response = await fetch(`/api/schedules/${encodeURIComponent(scheduleId)}`, { method: 'DELETE', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/schedules/${encodeURIComponent(scheduleId)}`, { method: 'DELETE', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.text();
 };
 
 export const getUpcomingEvents = async ({ days = 7 } = {}) => {
   const params = new URLSearchParams({ days: String(days) });
-  const response = await fetch(`/api/schedules/upcoming/events?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/schedules/upcoming/events?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
@@ -377,38 +383,38 @@ export const getScheduleEvents = async ({ skip = 0, limit = 25, start_date, end_
   const params = new URLSearchParams({ skip: String(skip), limit: String(limit) });
   if (start_date) params.set('start_date', start_date);
   if (end_date) params.set('end_date', end_date);
-  const response = await fetch(`/api/schedule_events?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/schedule_events?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const createScheduleEvent = async (payload) => {
-  const response = await fetch('/api/schedule_events', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+  const response = await fetch(`${BASE_URL}/api/schedule_events`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const getScheduleEventById = async (eventId) => {
-  const response = await fetch(`/api/schedule_events/${encodeURIComponent(eventId)}`, { method: 'GET', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/schedule_events/${encodeURIComponent(eventId)}`, { method: 'GET', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const updateScheduleEvent = async (eventId, payload) => {
-  const response = await fetch(`/api/schedule_events/${encodeURIComponent(eventId)}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+  const response = await fetch(`${BASE_URL}/api/schedule_events/${encodeURIComponent(eventId)}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(payload) });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const deleteScheduleEvent = async (eventId) => {
-  const response = await fetch(`/api/schedule_events/${encodeURIComponent(eventId)}`, { method: 'DELETE', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/schedule_events/${encodeURIComponent(eventId)}`, { method: 'DELETE', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.text();
 };
 
 export const getUpcomingScheduleEvents = async ({ days = 7 } = {}) => {
   const params = new URLSearchParams({ days: String(days) });
-  const response = await fetch(`/api/schedule_events/upcoming/events?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/schedule_events/upcoming/events?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
@@ -416,31 +422,31 @@ export const getUpcomingScheduleEvents = async ({ days = 7 } = {}) => {
 // ===== News API =====
 export const getNews = async ({ skip = 0, limit = 25 } = {}) => {
   const params = new URLSearchParams({ skip: String(skip), limit: String(limit) });
-  const response = await fetch(`/api/news?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/admin/news?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const createNews = async (payload) => {
-  const response = await fetch('/api/news', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+  const response = await fetch(`${BASE_URL}/api/admin/news`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const getNewsById = async (newsId) => {
-  const response = await fetch(`/api/news/${encodeURIComponent(newsId)}`, { method: 'GET', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/news/${encodeURIComponent(newsId)}`, { method: 'GET', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const updateNews = async (newsId, payload) => {
-  const response = await fetch(`/api/news/${encodeURIComponent(newsId)}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+  const response = await fetch(`${BASE_URL}/api/admin/news/${encodeURIComponent(newsId)}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(payload) });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const deleteNews = async (newsId) => {
-  const response = await fetch(`/api/news/${encodeURIComponent(newsId)}`, { method: 'DELETE', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/admin/news/${encodeURIComponent(newsId)}`, { method: 'DELETE', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.text();
 };
@@ -448,31 +454,31 @@ export const deleteNews = async (newsId) => {
 // ===== Projects API =====
 export const getProjects = async ({ skip = 0, limit = 25 } = {}) => {
   const params = new URLSearchParams({ skip: String(skip), limit: String(limit) });
-  const response = await fetch(`/api/projects?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/admin/projects?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const createProject = async (payload) => {
-  const response = await fetch('/api/projects', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+  const response = await fetch(`${BASE_URL}/api/admin/projects`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const getProjectById = async (projectId) => {
-  const response = await fetch(`/api/projects/${encodeURIComponent(projectId)}`, { method: 'GET', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/projects/${encodeURIComponent(projectId)}`, { method: 'GET', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const updateProject = async (projectId, payload) => {
-  const response = await fetch(`/api/projects/${encodeURIComponent(projectId)}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+  const response = await fetch(`${BASE_URL}/api/admin/projects/${encodeURIComponent(projectId)}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(payload) });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const deleteProject = async (projectId) => {
-  const response = await fetch(`/api/projects/${encodeURIComponent(projectId)}`, { method: 'DELETE', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/admin/projects/${encodeURIComponent(projectId)}`, { method: 'DELETE', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.text();
 };
@@ -480,57 +486,57 @@ export const deleteProject = async (projectId) => {
 // ===== Notifications API =====
 export const getUserNotifications = async (userId, { skip = 0, limit = 100, unread_only = false } = {}) => {
   const params = new URLSearchParams({ skip: String(skip), limit: String(limit), unread_only: String(unread_only) });
-  const response = await fetch(`/api/notifications/user/${encodeURIComponent(userId)}?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/notifications/user/${encodeURIComponent(userId)}?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const getMyNotifications = async ({ skip = 0, limit = 100, unread_only = false } = {}) => {
   const params = new URLSearchParams({ skip: String(skip), limit: String(limit), unread_only: String(unread_only) });
-  const response = await fetch(`/api/notifications/my?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/notifications/my?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const getPublicNotifications = async ({ skip = 0, limit = 100 } = {}) => {
   const params = new URLSearchParams({ skip: String(skip), limit: String(limit) });
-  const response = await fetch(`/api/notifications/public?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/notifications/public?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const getNotificationById = async (notificationId) => {
-  const response = await fetch(`/api/notifications/${encodeURIComponent(notificationId)}`, { method: 'GET', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/notifications/${encodeURIComponent(notificationId)}`, { method: 'GET', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const updateNotification = async (notificationId, payload) => {
-  const response = await fetch(`/api/notifications/${encodeURIComponent(notificationId)}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+  const response = await fetch(`${BASE_URL}/api/notifications/${encodeURIComponent(notificationId)}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(payload) });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const deleteNotification = async (notificationId) => {
-  const response = await fetch(`/api/notifications/${encodeURIComponent(notificationId)}`, { method: 'DELETE', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/notifications/${encodeURIComponent(notificationId)}`, { method: 'DELETE', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.text();
 };
 
 export const createNotification = async (payload) => {
-  const response = await fetch('/api/notifications/', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+  const response = await fetch(`${BASE_URL}/api/notifications/`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) });
   if (!response.ok) throw new Error(await response.text());
   return await response.json();
 };
 
 export const markNotificationRead = async (notificationId) => {
-  const response = await fetch(`/api/notifications/${encodeURIComponent(notificationId)}/mark-read`, { method: 'PUT', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/notifications/${encodeURIComponent(notificationId)}/mark-read`, { method: 'PUT', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.text();
 };
 
 export const markAllNotificationsRead = async () => {
-  const response = await fetch('/api/notifications/mark-all-read', { method: 'PUT', headers: getAuthHeaders() });
+  const response = await fetch(`${BASE_URL}/api/notifications/mark-all-read`, { method: 'PUT', headers: getAuthHeaders() });
   if (!response.ok) throw new Error(await response.text());
   return await response.text();
 };
@@ -540,7 +546,7 @@ export const uploadImage = async (file) => {
   const formData = new FormData();
   formData.append('file', file);
   
-  const response = await fetch('/api/upload/image', {
+  const response = await fetch(`${BASE_URL}/api/upload/image`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -556,7 +562,7 @@ export const uploadVideo = async (file) => {
   const formData = new FormData();
   formData.append('file', file);
   
-  const response = await fetch('/api/upload/video', {
+  const response = await fetch(`${BASE_URL}/api/upload/video`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -572,7 +578,7 @@ export const uploadDocument = async (file) => {
   const formData = new FormData();
   formData.append('file', file);
   
-  const response = await fetch('/api/upload/document', {
+  const response = await fetch(`${BASE_URL}/api/upload/document`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -590,7 +596,7 @@ export const uploadMultipleFiles = async (files) => {
     formData.append('files', file);
   });
   
-  const response = await fetch('/api/upload/multiple', {
+  const response = await fetch(`${BASE_URL}/api/upload/multiple`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -604,7 +610,7 @@ export const uploadMultipleFiles = async (files) => {
 
 // ===== Constituencies API =====
 export const getAllConstituencies = async () => {
-  const response = await fetch('/api/constituencies/', { 
+  const response = await fetch(`${BASE_URL}/api/constituencies/`, { 
     method: 'GET', 
     headers: getAuthHeaders() 
   });
@@ -613,7 +619,7 @@ export const getAllConstituencies = async () => {
 };
 
 export const getConstituencyById = async (constituencyId) => {
-  const response = await fetch(`/api/constituencies/${encodeURIComponent(constituencyId)}`, { 
+  const response = await fetch(`${BASE_URL}/api/constituencies/${encodeURIComponent(constituencyId)}`, { 
     method: 'GET', 
     headers: getAuthHeaders() 
   });
@@ -623,7 +629,7 @@ export const getConstituencyById = async (constituencyId) => {
 
 // ===== Departments API =====
 export const getAllDepartments = async () => {
-  const response = await fetch('/api/departments/', { 
+  const response = await fetch(`${BASE_URL}/api/departments/`, { 
     method: 'GET', 
     headers: getAuthHeaders() 
   });
@@ -632,7 +638,7 @@ export const getAllDepartments = async () => {
 };
 
 export const getDepartmentById = async (departmentId) => {
-  const response = await fetch(`/api/departments/${encodeURIComponent(departmentId)}`, { 
+  const response = await fetch(`${BASE_URL}/api/departments/${encodeURIComponent(departmentId)}`, { 
     method: 'GET', 
     headers: getAuthHeaders() 
   });
@@ -642,7 +648,7 @@ export const getDepartmentById = async (departmentId) => {
 
 // ===== Admin Authentication API =====
 export const adminLogin = async (email, password) => {
-  const response = await fetch('/api/admin/auth/login', {
+  const response = await fetch(`${BASE_URL}/api/admin/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -654,7 +660,7 @@ export const adminLogin = async (email, password) => {
 };
 
 export const getCurrentAdmin = async () => {
-  const response = await fetch('/api/admin/auth/me', { 
+  const response = await fetch(`${BASE_URL}/api/admin/auth/me`, { 
     method: 'GET', 
     headers: getAuthHeaders() 
   });
@@ -663,7 +669,7 @@ export const getCurrentAdmin = async () => {
 };
 
 export const adminLogout = async () => {
-  const response = await fetch('/api/admin/auth/logout', {
+  const response = await fetch(`${BASE_URL}/api/admin/auth/logout`, {
     method: 'POST',
     headers: getAuthHeaders()
   });
@@ -672,7 +678,7 @@ export const adminLogout = async () => {
 };
 
 export const validateAdminAccess = async () => {
-  const response = await fetch('/api/admin/auth/validate', { 
+  const response = await fetch(`${BASE_URL}/api/admin/auth/validate`, { 
     method: 'GET', 
     headers: getAuthHeaders() 
   });
@@ -681,7 +687,7 @@ export const validateAdminAccess = async () => {
 };
 
 export const createAdmin = async (adminData) => {
-  const response = await fetch('/api/admin/auth/create', {
+  const response = await fetch(`${BASE_URL}/api/admin/auth/create`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -694,7 +700,7 @@ export const createAdmin = async (adminData) => {
 };
 
 export const getAllAdmins = async () => {
-  const response = await fetch('/api/admin/auth/list', { 
+  const response = await fetch(`${BASE_URL}/api/admin/auth/list`, { 
     method: 'GET', 
     headers: getAuthHeaders() 
   });
@@ -703,7 +709,7 @@ export const getAllAdmins = async () => {
 };
 
 export const updateAdmin = async (adminId, adminData) => {
-  const response = await fetch(`/api/admin/auth/update/${encodeURIComponent(adminId)}`, {
+  const response = await fetch(`${BASE_URL}/api/admin/auth/update/${encodeURIComponent(adminId)}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -716,7 +722,7 @@ export const updateAdmin = async (adminId, adminData) => {
 };
 
 export const deleteAdmin = async (adminId) => {
-  const response = await fetch(`/api/admin/auth/delete/${encodeURIComponent(adminId)}`, {
+  const response = await fetch(`${BASE_URL}/api/admin/auth/delete/${encodeURIComponent(adminId)}`, {
     method: 'DELETE',
     headers: getAuthHeaders()
   });
@@ -726,7 +732,7 @@ export const deleteAdmin = async (adminId) => {
 
 // ===== User Authentication API =====
 export const loginUser = async (email, password) => {
-  const response = await fetch('/api/auth/login', {
+  const response = await fetch(`${BASE_URL}/api/admin/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -746,7 +752,7 @@ export const loginUser = async (email, password) => {
 };
 
 export const registerUser = async (userData) => {
-  const response = await fetch('/api/auth/register', {
+  const response = await fetch(`${BASE_URL}/api/auth/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -768,7 +774,7 @@ export const registerUser = async (userData) => {
 // Load voter IDs from file (Admin only)
 export const loadVoterIds = async () => {
   try {
-    const response = await fetch('/api/auth/admin/load-voter-ids', {
+    const response = await fetch(`${BASE_URL}/api/auth/admin/load-voter-ids`, {
       method: 'POST',
       headers: getAuthHeaders()
     });

@@ -99,7 +99,7 @@ const SignUp = () => {
       setError('You must agree to the Terms and Conditions');
       return;
     }
-
+    
     // Prepare user data for registration
     const userData = {
       firstName: formData.firstName,
