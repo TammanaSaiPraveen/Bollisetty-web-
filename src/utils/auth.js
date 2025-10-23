@@ -648,15 +648,29 @@ export const getDepartmentById = async (departmentId) => {
 
 // ===== Admin Authentication API =====
 export const adminLogin = async (email, password) => {
-  const response = await fetch(`${BASE_URL}/api/admin/auth/login`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ email, password })
-  });
-  if (!response.ok) throw new Error(await response.text());
-  return await response.json();
+  try {
+    const response = await fetch(`${BASE_URL}/api/admin/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password })
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Admin Login API Error:', response.status, errorText);
+      throw new Error(`Admin login failed: ${response.status} - ${errorText}`);
+    }
+    
+    const result = await response.json();
+    console.log('Admin Login API Response:', result);
+    
+    return result;
+  } catch (error) {
+    console.error('Admin Login API Error:', error);
+    throw error;
+  }
 };
 
 export const getCurrentAdmin = async () => {
@@ -732,23 +746,35 @@ export const deleteAdmin = async (adminId) => {
 
 // ===== User Authentication API =====
 export const loginUser = async (email, password) => {
-  const response = await fetch(`${BASE_URL}/api/admin/auth/login`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ email, password })
-  });
-  if (!response.ok) throw new Error(await response.text());
-  const result = await response.json();
-  
-  // Store the access token in localStorage
-  localStorage.setItem('access_token', result.access_token);
-  localStorage.setItem('token_type', result.token_type);
-  localStorage.setItem('expires_in', result.expires_in);
-  localStorage.setItem('login_time', Date.now().toString());
-  
-  return result;
+  try {
+    const response = await fetch(`${BASE_URL}/api/admin/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password })
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Login API Error:', response.status, errorText);
+      throw new Error(`Login failed: ${response.status} - ${errorText}`);
+    }
+    
+    const result = await response.json();
+    console.log('Login API Response:', result);
+    
+    // Store the access token in localStorage
+    localStorage.setItem('access_token', result.access_token);
+    localStorage.setItem('token_type', result.token_type || 'Bearer');
+    localStorage.setItem('expires_in', result.expires_in);
+    localStorage.setItem('login_time', Date.now().toString());
+    
+    return result;
+  } catch (error) {
+    console.error('Login API Error:', error);
+    throw error;
+  }
 };
 
 export const registerUser = async (userData) => {

@@ -15,6 +15,7 @@ import Notifications from './components/Notifications'
 import Upload from './components/Upload'
 import Constituencies from './components/Constituencies'
 import Departments from './components/Departments'
+import ApiTest from './components/ApiTest'
 import { UserProvider } from './contexts/UserContext'
 import { isAuthenticated } from './utils/auth'
 import './App.css'
@@ -46,6 +47,7 @@ function App() {
           <Route path="/upload" element={<ProtectedRoute><Upload /></ProtectedRoute>} />
           <Route path="/constituencies" element={<ProtectedRoute><Constituencies /></ProtectedRoute>} />
           <Route path="/departments" element={<ProtectedRoute><Departments /></ProtectedRoute>} />
+          <Route path="/api-test" element={<ApiTest />} />
         </Routes>
       </Router>
     </UserProvider>
