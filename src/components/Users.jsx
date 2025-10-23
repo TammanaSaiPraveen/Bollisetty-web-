@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import fullLogo from '../assets/Images/fulllogo.png';
 import apImage from '../assets/Images/AP.png';
 import filterIcon from '../assets/icons/filter.png'
-import { getAuthHeaders } from '../utils/auth';
+import { getAuthHeaders, listUsers, listUsersAdmin, getUserByEmail, getUserById, updateUserById, deleteUserById } from '../utils/auth';
 
 const Users = () => {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
@@ -33,11 +33,11 @@ const Users = () => {
   const [deletedUserName, setDeletedUserName] = useState('');
   const [userToDelete, setUserToDelete] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
-    role: '',
+    firstName: '',
+    lastName: '',
     email: '',
     address: '',
-    department: ''
+    roleId: ''
   });
   const [editFormData, setEditFormData] = useState({ id: '', name: '', role: '', email: '', department: '' });
   const [users, setUsers] = useState([]);
@@ -79,29 +79,23 @@ const Users = () => {
     try {
       setLoadingUsers(true);
       setUsersError('');
-      const params = new URLSearchParams({ skip: String(pageSkip), limit: String(pageLimit) });
-      const base = adminMode ? '/api/users/admin/all' : '/api/users';
-      const response = await fetch(`${base}?${params.toString()}`, {
-        method: 'GET',
-        headers: getAuthHeaders()
-      });
-      if (response.ok) {
-        const data = await response.json();
-        // Map API users to table rows: [ID, Name, Email, Department, Role]
-        const mapped = (Array.isArray(data) ? data : data.items || []).map((u) => [
-          u.id || u.userId || u.voterId || '-',
-          [u.firstName, u.lastName].filter(Boolean).join(' ') || u.name || '-',
-          u.email || '-',
-          u.department || u.departmentName || '-',
-          u.role || u.roleName || '-'
-        ]);
-        setUsers(mapped);
-      } else {
-        const err = await response.text();
-        setUsersError(err || 'Failed to load users');
-      }
+      const data = await (adminMode ? listUsersAdmin({ skip: pageSkip, limit: pageLimit }) : listUsers({ skip: pageSkip, limit: pageLimit }));
+      
+      // Map API users to table rows: [ID, Name, Email, Department, Role]
+      // Handle both array response and paginated response
+      const usersList = Array.isArray(data) ? data : (data.items || data.users || []);
+      
+      const mapped = usersList.map((u) => [
+        u.id || u.userId || '-',
+        [u.firstName || u.Firstname, u.lastName || u.Lastname].filter(Boolean).join(' ') || '-',
+        u.email || '-',
+        u.address || '-', // Using address as department placeholder
+        u.roleId || u.roleid || '-' // Using roleId as role placeholder
+      ]);
+      setUsers(mapped);
+      
     } catch (e) {
-      setUsersError('Network error. Please try again.');
+      setUsersError(`Error loading users: ${e.message || 'Network error'}`);
     } finally {
       setLoadingUsers(false);
     }
@@ -117,27 +111,19 @@ const Users = () => {
     try {
       setSearchingByEmail(true);
       setSearchError('');
-      const response = await fetch(`/api/users/by-email/${encodeURIComponent(email)}`, {
-        method: 'GET',
-        headers: getAuthHeaders()
-      });
-      if (response.ok) {
-        const u = await response.json();
-        const row = [
-          u.id || u.userId || u.voterId || '-',
-          [u.firstName, u.lastName].filter(Boolean).join(' ') || u.name || '-',
-          u.email || '-',
-          u.department || u.departmentName || '-',
-          u.role || u.roleName || '-'
-        ];
-        setUsers([row]);
-        setSkip(0);
-      } else {
-        const err = await response.text();
-        setSearchError(err || 'No user found with that email');
-      }
+      const u = await getUserByEmail(email);
+      const row = [
+        u.id || u.userId || '-',
+        [u.firstName || u.Firstname, u.lastName || u.Lastname].filter(Boolean).join(' ') || '-',
+        u.email || '-',
+        u.address || '-', // Using address as department placeholder
+        u.roleId || u.roleid || '-' // Using roleId as role placeholder
+      ];
+      setUsers([row]);
+      setSkip(0);
+      
     } catch (e) {
-      setSearchError('Network error while searching by email');
+      setSearchError(`Error searching by email: ${e.message || 'User not found'}`);
     } finally {
       setSearchingByEmail(false);
     }
@@ -153,14 +139,14 @@ const Users = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Create a new user row and prepend to list
+    // For now, create a mock user since we don't have a create user API endpoint
     const newId = `user${Math.floor(1000 + Math.random()*9000)}`;
-    const newRow = [newId, formData.name, formData.email, formData.department, formData.role];
+    const newRow = [newId, `${formData.firstName} ${formData.lastName}`, formData.email, formData.address, formData.roleId];
     setUsers(prev => [newRow, ...prev]);
     setShowAddUserModal(false);
     setShowSuccessModal(true);
     setTimeout(() => setShowSuccessModal(false), 3000);
-    setFormData({ name: '', role: '', email: '', address: '', department: '' });
+    setFormData({ firstName: '', lastName: '', email: '', address: '', roleId: '' });
   };
 
   // Fetch user by ID and open edit modal
@@ -173,23 +159,17 @@ const Users = () => {
     setEditLoading(true);
     const userId = users[idx][0];
     try {
-      const response = await fetch(`/api/users/${encodeURIComponent(userId)}`, {
-        method: 'GET',
-        headers: getAuthHeaders()
-      });
-      if (response.ok) {
-        const u = await response.json();
+      try {
+        const u = await getUserById(userId);
         setEditFormData({
           id: u.id || u.userId || userId,
-          name: [u.firstName, u.lastName].filter(Boolean).join(' ') || u.name || users[idx][1],
+          name: [u.firstName || u.Firstname, u.lastName || u.Lastname].filter(Boolean).join(' ') || users[idx][1],
           email: u.email || users[idx][2],
-          department: u.department || u.departmentName || users[idx][3],
-          role: u.role || u.roleName || users[idx][4]
+          department: u.address || users[idx][3], // Using address as department
+          role: u.roleId || u.roleid || users[idx][4] // Using roleId as role
         });
-      } else {
-        const err = await response.text();
-        setEditError(err || 'Failed to fetch user details');
-        // fallback to current row data
+      } catch (err) {
+        setEditError(String(err.message || 'Failed to fetch user details'));
         setEditFormData({ id: users[idx][0], name: users[idx][1], email: users[idx][2], department: users[idx][3], role: users[idx][4] });
       }
     } catch (e) {
@@ -211,36 +191,35 @@ const Users = () => {
     setEditError('');
     setSavingEdit(true);
     try {
-      // Prepare payload according to available fields
+      // Prepare payload according to API structure
       const [firstName, ...rest] = (editFormData.name || '').split(' ');
       const lastName = rest.join(' ');
       const payload = {
         firstName: firstName || undefined,
         lastName: lastName || undefined,
         email: editFormData.email || undefined,
-        department: editFormData.department || undefined,
-        role: editFormData.role || undefined,
+        phoneNumber: undefined, // Not in form, but API expects it
+        voterId: undefined, // Not in form, but API expects it
+        profilePictureUrl: undefined, // Not in form, but API expects it
+        address: editFormData.department || undefined, // Using department field as address
+        description: undefined, // Not in form, but API expects it
+        roleId: editFormData.role || undefined,
+        constituencyId: undefined // Not in form, but API expects it
       };
-      const response = await fetch(`/api/users/${encodeURIComponent(editFormData.id)}`, {
-        method: 'PUT',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(payload)
-      });
-      if (response.ok) {
-        const u = await response.json();
+      try {
+        const u = await updateUserById(editFormData.id, payload);
         const updatedRow = [
           u.id || u.userId || editFormData.id,
-          [u.firstName, u.lastName].filter(Boolean).join(' ') || u.name || editFormData.name,
+          [u.firstName || u.Firstname, u.lastName || u.Lastname].filter(Boolean).join(' ') || editFormData.name,
           u.email || editFormData.email,
-          u.department || u.departmentName || editFormData.department,
-          u.role || u.roleName || editFormData.role
+          u.address || editFormData.department,
+          u.roleId || u.roleid || editFormData.role
         ];
         setUsers((prev) => prev.map((row, i) => i === editIndex ? updatedRow : row));
         setShowEditUserModal(false);
         setEditIndex(-1);
-      } else {
-        const err = await response.text();
-        setEditError(err || 'Failed to update user');
+      } catch (err) {
+        setEditError(String(err.message || 'Failed to update user'));
       }
     } catch (err) {
       setEditError('Network error while updating user');
@@ -261,11 +240,8 @@ const Users = () => {
     setDeleting(true);
     setDeleteError('');
     try {
-      const response = await fetch(`/api/users/${encodeURIComponent(id)}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders()
-      });
-      if (response.ok) {
+      try {
+        await deleteUserById(id);
         if (idx !== -1) {
           setUsers((prev) => prev.filter((_, i) => i !== idx));
         }
@@ -274,9 +250,8 @@ const Users = () => {
         setTimeout(() => setShowDeleteSuccessModal(false), 3000);
         setShowDeleteConfirmModal(false);
         setUserToDelete(null);
-      } else {
-        const err = await response.text();
-        setDeleteError(err || 'Failed to delete user');
+      } catch (err) {
+        setDeleteError(String(err.message || 'Failed to delete user'));
       }
     } catch (e) {
       setDeleteError('Network error while deleting user');
@@ -292,7 +267,7 @@ const Users = () => {
 
   const handleCloseModal = () => {
     setShowAddUserModal(false);
-    setFormData({ name: '', role: '', email: '', address: '', department: '' });
+    setFormData({ firstName: '', lastName: '', email: '', address: '', roleId: '' });
   };
 
   // Search should be fixed width; no expand on focus
@@ -580,7 +555,7 @@ const Users = () => {
             <table className="w-full border-collapse">
               <thead>
                 <tr>
-                  {['ID','Name','Email','Department','Role',''].map(h => (
+                  {['ID','Name','Email','Address','Role ID',''].map(h => (
                     <th key={h} className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b border-gray-200" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>{h}</th>
                   ))}
                 </tr>
@@ -640,7 +615,7 @@ const Users = () => {
                   <input type="email" id="edit_email" name="email" value={editFormData.email} onChange={handleEditInputChange} required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" />
                 </div>
                 <div className="sm:col-span-2">
-                  <label htmlFor="edit_department" className="block text-xs font-medium text-gray-600 mb-1">Department</label>
+                  <label htmlFor="edit_department" className="block text-xs font-medium text-gray-600 mb-1">Address</label>
                   <input id="edit_department" name="department" value={editFormData.department} onChange={handleEditInputChange} required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" />
                 </div>
               </div>
@@ -669,25 +644,25 @@ const Users = () => {
             <form onSubmit={handleSubmit} className="px-6 py-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="name" className="block text-xs font-medium text-gray-600 mb-1">Name</label>
-                  <input type="text" id="name" name="name" value={formData.name} onChange={handleInputChange} placeholder="Enter Full Name" required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" />
+                  <label htmlFor="firstName" className="block text-xs font-medium text-gray-600 mb-1">First Name</label>
+                  <input type="text" id="firstName" name="firstName" value={formData.firstName} onChange={handleInputChange} placeholder="Enter First Name" required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" />
                 </div>
                 <div>
-                  <label htmlFor="role" className="block text-xs font-medium text-gray-600 mb-1">Role</label>
-                  <input type="text" id="role" name="role" value={formData.role} onChange={handleInputChange} placeholder="Enter Role" required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" />
-              </div>
+                  <label htmlFor="lastName" className="block text-xs font-medium text-gray-600 mb-1">Last Name</label>
+                  <input type="text" id="lastName" name="lastName" value={formData.lastName} onChange={handleInputChange} placeholder="Enter Last Name" required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" />
+                </div>
                 <div className="sm:col-span-2">
                   <label htmlFor="email" className="block text-xs font-medium text-gray-600 mb-1">Email</label>
                   <input type="email" id="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="Enter Email" required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" />
-              </div>
+                </div>
                 <div className="sm:col-span-2">
                   <label htmlFor="address" className="block text-xs font-medium text-gray-600 mb-1">Address</label>
                   <input id="address" name="address" value={formData.address} onChange={handleInputChange} placeholder="Street, city" required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" />
-              </div>
+                </div>
                 <div className="sm:col-span-2">
-                  <label htmlFor="department" className="block text-xs font-medium text-gray-600 mb-1">Department</label>
-                  <input id="department" name="department" value={formData.department} onChange={handleInputChange} placeholder="Detailed Description....." required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" />
-              </div>
+                  <label htmlFor="roleId" className="block text-xs font-medium text-gray-600 mb-1">Role ID</label>
+                  <input id="roleId" name="roleId" value={formData.roleId} onChange={handleInputChange} placeholder="Enter Role ID" required className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-700" />
+                </div>
               </div>
               <div className="flex gap-3 mt-6">
                 <button type="submit" className="bg-blue-600 text-white px-5 py-2.5 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-blue-700">

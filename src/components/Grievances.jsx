@@ -144,7 +144,7 @@ const Grievances = () => {
         title: created.title,
         area: created.constituency || created.area || '',
         department: created.department || '',
-        status: created.status || 'OPEN'
+        status: created.status || 'open'
       };
       setGrievances((prev) => [mapped, ...prev]);
     setShowAddGrievanceModal(false);
@@ -179,7 +179,13 @@ const Grievances = () => {
 
   const sidebarWidthPx = sidebarExpanded ? 200 : 60;
   const [searchTerm, setSearchTerm] = useState('');
-  const PIE_COLORS = { current: '#6D28D9', ongoing: '#F97316', completed: '#22D3EE' };
+  const PIE_COLORS = { 
+    open: '#3B82F6', 
+    'in review': '#F59E0B', 
+    'in progress': '#F97316', 
+    resolved: '#10B981', 
+    closed: '#6B7280' 
+  };
 
   // Table data and filtering
   const [grievances, setGrievances] = useState([]);
@@ -197,7 +203,7 @@ const Grievances = () => {
         title: g.title || '-',
         area: g.constituency || g.area || '-',
         department: g.department || '-',
-        status: g.status || 'OPEN'
+        status: g.status || 'open'
       }));
       setGrievances(mapped);
     } catch (err) {
@@ -209,7 +215,7 @@ const Grievances = () => {
 
   useEffect(() => { fetchAll(); /* eslint-disable-next-line */ }, [skip, limit, statusFilter, priorityFilter, adminMode]);
 
-  const STATUS_OPTIONS = ['Ongoing','Not Stated Yet','Completed'];
+  const STATUS_OPTIONS = ['open', 'in review', 'in progress', 'resolved', 'closed'];
   const [openStatusRow, setOpenStatusRow] = useState(null);
 
   useEffect(() => {
@@ -223,12 +229,15 @@ const Grievances = () => {
     setOpenStatusRow(null);
   };
 
-  const getStatusClasses = (status) =>
-    status.includes('Completed')
-      ? 'bg-green-400 text-white'
-      : status.includes('Ongoing')
-      ? 'bg-yellow-400 text-white'
-      : 'bg-gray-200 text-gray-800';
+  const getStatusClasses = (status) => {
+    const statusLower = status.toLowerCase();
+    if (statusLower === 'open') return 'bg-blue-100 text-blue-800 border border-blue-200';
+    if (statusLower === 'in review') return 'bg-yellow-100 text-yellow-800 border border-yellow-200';
+    if (statusLower === 'in progress') return 'bg-orange-100 text-orange-800 border border-orange-200';
+    if (statusLower === 'resolved') return 'bg-green-100 text-green-800 border border-green-200';
+    if (statusLower === 'closed') return 'bg-gray-100 text-gray-800 border border-gray-200';
+    return 'bg-gray-100 text-gray-800 border border-gray-200';
+  };
 
   const filteredGrievances = grievances
     .filter((row) => [row.id,row.title,row.area,row.department,row.status].some((cell) => String(cell).toLowerCase().includes(searchTerm.toLowerCase())))
@@ -404,10 +413,10 @@ const Grievances = () => {
               </button>
                 {showStatusOptions && (
                   <div className="pl-6 py-1 flex flex-col gap-2 text-sm text-gray-700">
-                    {['Ongoing','Not Stated Yet','Completed'].map((st)=> (
+                    {STATUS_OPTIONS.map((st)=> (
                       <label key={st} className="inline-flex items-center gap-2">
                         <input type="checkbox" className="accent-blue-600" checked={selectedStatuses.includes(st)} onChange={(e)=> setSelectedStatuses((prev)=> e.target.checked ? [...prev, st] : prev.filter((x)=> x!==st))} />
-                        <span>{st}</span>
+                        <span className="capitalize">{st}</span>
                       </label>
                     ))}
                   </div>
@@ -439,24 +448,30 @@ const Grievances = () => {
               <div key={i} className="rounded-xl p-6 shadow-md" style={{ backgroundColor: 'rgba(255,255,255,0.65)' }}>
                 <h3 className="text-lg font-semibold text-gray-800 m-0 mb-4">Grievances Status</h3>
                 <LegendRow items={[
-                  { label: 'Current', color: PIE_COLORS.current },
-                  { label: 'Ongoing', color: PIE_COLORS.ongoing },
-                  { label: 'Completed', color: PIE_COLORS.completed },
+                  { label: 'Open', color: PIE_COLORS.open },
+                  { label: 'In Review', color: PIE_COLORS['in review'] },
+                  { label: 'In Progress', color: PIE_COLORS['in progress'] },
+                  { label: 'Resolved', color: PIE_COLORS.resolved },
+                  { label: 'Closed', color: PIE_COLORS.closed },
                 ]} />
                 <div className="flex items-center gap-6">
                   <PieChart
                     size={180}
                     thickness={28}
                     data={[
-                      { label: 'Current', value: 25, color: PIE_COLORS.current },
-                      { label: 'Ongoing', value: 35, color: PIE_COLORS.ongoing },
-                      { label: 'Completed', value: 40, color: PIE_COLORS.completed },
+                      { label: 'Open', value: 20, color: PIE_COLORS.open },
+                      { label: 'In Review', value: 15, color: PIE_COLORS['in review'] },
+                      { label: 'In Progress', value: 25, color: PIE_COLORS['in progress'] },
+                      { label: 'Resolved', value: 30, color: PIE_COLORS.resolved },
+                      { label: 'Closed', value: 10, color: PIE_COLORS.closed },
                     ]}
                   />
                   <Legend items={[
-                    { label: 'Current', value: 25, color: PIE_COLORS.current },
-                    { label: 'Ongoing', value: 35, color: PIE_COLORS.ongoing },
-                    { label: 'Completed', value: 40, color: PIE_COLORS.completed },
+                    { label: 'Open', value: 20, color: PIE_COLORS.open },
+                    { label: 'In Review', value: 15, color: PIE_COLORS['in review'] },
+                    { label: 'In Progress', value: 25, color: PIE_COLORS['in progress'] },
+                    { label: 'Resolved', value: 30, color: PIE_COLORS.resolved },
+                    { label: 'Closed', value: 10, color: PIE_COLORS.closed },
                   ]} />
                     </div>
                   </div>
@@ -494,7 +509,7 @@ const Grievances = () => {
                           onClick={()=> setOpenStatusRow(openStatusRow===idx ? null : idx)}
                           className={`px-3 py-1 rounded-full text-xs font-medium shadow-sm ${getStatusClasses(row.status)}`}
                         >
-                          {row.status}
+                          <span className="capitalize">{row.status}</span>
                         </button>
                         {openStatusRow===idx && (
                           <div className="absolute z-10 mt-2 p-2 bg-white border border-gray-200 rounded-md shadow-lg min-w-[160px]">
@@ -506,7 +521,7 @@ const Grievances = () => {
                                   onClick={()=>updateStatus(idx, opt)}
                                   className={`px-3 py-1 rounded-full text-xs font-medium text-left ${getStatusClasses(opt)}`}
                                 >
-                                  {opt}
+                                  <span className="capitalize">{opt}</span>
                                 </button>
                               ))}
                             </div>

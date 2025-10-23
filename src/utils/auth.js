@@ -18,8 +18,12 @@ export const isTokenExpired = () => {
   const loginTime = localStorage.getItem('login_time');
   const expiresIn = localStorage.getItem('expires_in');
   
-  if (!loginTime || !expiresIn) {
+  if (!loginTime) {
     return true;
+  }
+  // If expiry is missing, assume token is valid (grace behavior)
+  if (!expiresIn) {
+    return false;
   }
   
   const currentTime = Date.now();
@@ -57,7 +61,7 @@ export const getAuthHeaders = () => {
 // Fetch current user information
 export const getCurrentUser = async () => {
   try {
-    const response = await fetch(`${BASE_URL}/api/auth/me`, {
+    const response = await fetch(`${BASE_URL}/api/admin/auth/me`, {
       method: 'GET',
       headers: getAuthHeaders()
     });
@@ -68,7 +72,6 @@ export const getCurrentUser = async () => {
     } else if (response.status === 401) {
       // Token expired or invalid
       clearAuthData();
-      window.location.href = '/login';
       return null;
     } else {
       throw new Error('Failed to fetch user data');
@@ -523,6 +526,45 @@ export const deleteNotification = async (notificationId) => {
   return await response.text();
 };
 
+// ===== Users API =====
+export const listUsers = async ({ skip = 0, limit = 25 } = {}) => {
+  const params = new URLSearchParams({ skip: String(skip), limit: String(limit) });
+  const response = await fetch(`${BASE_URL}/api/users?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.json();
+};
+
+export const listUsersAdmin = async ({ skip = 0, limit = 25 } = {}) => {
+  const params = new URLSearchParams({ skip: String(skip), limit: String(limit) });
+  const response = await fetch(`${BASE_URL}/api/users/admin/all?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.json();
+};
+
+export const getUserByEmail = async (email) => {
+  const response = await fetch(`${BASE_URL}/api/users/by-email/${encodeURIComponent(email)}`, { method: 'GET', headers: getAuthHeaders() });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.json();
+};
+
+export const getUserById = async (userId) => {
+  const response = await fetch(`${BASE_URL}/api/users/${encodeURIComponent(userId)}`, { method: 'GET', headers: getAuthHeaders() });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.json();
+};
+
+export const updateUserById = async (userId, payload) => {
+  const response = await fetch(`${BASE_URL}/api/users/${encodeURIComponent(userId)}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.json();
+};
+
+export const deleteUserById = async (userId) => {
+  const response = await fetch(`${BASE_URL}/api/users/${encodeURIComponent(userId)}`, { method: 'DELETE', headers: getAuthHeaders() });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.text();
+};
+
 export const createNotification = async (payload) => {
   const response = await fetch(`${BASE_URL}/api/notifications/`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) });
   if (!response.ok) throw new Error(await response.text());
@@ -756,9 +798,17 @@ export const loginUser = async (email, password) => {
     });
     
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Login API Error:', response.status, errorText);
-      throw new Error(`Login failed: ${response.status} - ${errorText}`);
+      let message = 'Login failed';
+      try {
+        const maybeJson = await response.json();
+        message = maybeJson?.detail || maybeJson?.message || message;
+      } catch (_) {
+        const fallbackText = await response.text();
+        // Attempt to extract a simple detail from raw text
+        message = fallbackText || message;
+      }
+      console.error('Login API Error:', response.status, message);
+      throw new Error(message);
     }
     
     const result = await response.json();
@@ -767,7 +817,9 @@ export const loginUser = async (email, password) => {
     // Store the access token in localStorage
     localStorage.setItem('access_token', result.access_token);
     localStorage.setItem('token_type', result.token_type || 'Bearer');
-    localStorage.setItem('expires_in', result.expires_in);
+    // Default to 1 hour if backend does not provide expires_in
+    const ttlSeconds = (result && (result.expires_in ?? result.expiresIn)) ?? 3600;
+    localStorage.setItem('expires_in', String(ttlSeconds));
     localStorage.setItem('login_time', Date.now().toString());
     
     return result;
