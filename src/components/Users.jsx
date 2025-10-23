@@ -79,6 +79,7 @@ const Users = () => {
     try {
       setLoadingUsers(true);
       setUsersError('');
+      
       const data = await (adminMode ? listUsersAdmin({ skip: pageSkip, limit: pageLimit }) : listUsers({ skip: pageSkip, limit: pageLimit }));
       
       // Map API users to table rows: [ID, Name, Email, Department, Role]
@@ -92,10 +93,15 @@ const Users = () => {
         u.address || '-', // Using address as department placeholder
         u.roleId || u.roleid || '-' // Using roleId as role placeholder
       ]);
+      
       setUsers(mapped);
       
     } catch (e) {
+      console.error('Error in fetchUsers:', e);
       setUsersError(`Error loading users: ${e.message || 'Network error'}`);
+      
+      // Set empty array on error to show "No users found" instead of loading state
+      setUsers([]);
     } finally {
       setLoadingUsers(false);
     }
@@ -464,7 +470,6 @@ const Users = () => {
             Add Users
           </button>
           <div className="flex items-center gap-2">
-            <button className="px-3 py-2 text-sm rounded bg-white border border-gray-300 hover:bg-gray-50" onClick={() => fetchUsers(skip, limit)}>Refresh</button>
             <label className="text-sm text-gray-600">Page size:
               <select className="ml-2 border border-gray-300 rounded px-2 py-1 text-sm" value={limit} onChange={(e)=> setLimit(Number(e.target.value))}>
                 {[10,25,50,100].map(n => <option key={n} value={n}>{n}</option>)}
@@ -478,7 +483,11 @@ const Users = () => {
               <button className="px-2 py-1 text-sm rounded bg-white border border-gray-300 disabled:opacity-50" disabled={loadingUsers} onClick={()=>{ const next = skip + limit; setSkip(next); fetchUsers(next, limit); }}>Next</button>
             </div>
           </div>
-          {usersError && <div className="text-sm text-red-600">{usersError}</div>}
+          {usersError && (
+            <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-md">
+              <div className="text-sm text-red-600">{usersError}</div>
+            </div>
+          )}
         </div>
 
         {/* Search and Filter */}

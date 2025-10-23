@@ -144,7 +144,7 @@ const Grievances = () => {
         title: created.title,
         area: created.constituency || created.area || '',
         department: created.department || '',
-        status: created.status || 'open'
+        status: created.status || 'OPEN'
       };
       setGrievances((prev) => [mapped, ...prev]);
     setShowAddGrievanceModal(false);
@@ -203,7 +203,7 @@ const Grievances = () => {
         title: g.title || '-',
         area: g.constituency || g.area || '-',
         department: g.department || '-',
-        status: g.status || 'open'
+        status: g.status || 'OPEN'
       }));
       setGrievances(mapped);
     } catch (err) {
@@ -215,8 +215,9 @@ const Grievances = () => {
 
   useEffect(() => { fetchAll(); /* eslint-disable-next-line */ }, [skip, limit, statusFilter, priorityFilter, adminMode]);
 
-  const STATUS_OPTIONS = ['open', 'in review', 'in progress', 'resolved', 'closed'];
+  const STATUS_OPTIONS = ['OPEN', 'IN_REVIEW', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'];
   const [openStatusRow, setOpenStatusRow] = useState(null);
+  const [updatingStatus, setUpdatingStatus] = useState(null);
 
   useEffect(() => {
     const onDocClick = () => setOpenStatusRow(null);
@@ -224,18 +225,50 @@ const Grievances = () => {
     return () => document.removeEventListener('click', onDocClick);
   }, []);
 
-  const updateStatus = (rowIndex, newStatus) => {
-    setGrievances(prev => prev.map((g, i) => i === rowIndex ? { ...g, status: newStatus } : g));
-    setOpenStatusRow(null);
+  const updateStatus = async (rowIndex, newStatus) => {
+    const grievance = grievances[rowIndex];
+    if (!grievance || !grievance.id) {
+      console.error('Invalid grievance data for status update');
+      return;
+    }
+
+    try {
+      // Set loading state for this specific row
+      setUpdatingStatus(rowIndex);
+      
+      // Optimistically update the UI first
+      setGrievances(prev => prev.map((g, i) => i === rowIndex ? { ...g, status: newStatus } : g));
+      setOpenStatusRow(null);
+
+      // Call the API to update the status in the database
+      await updateGrievanceStatusAdmin(grievance.id, newStatus);
+      
+      console.log(`Successfully updated grievance ${grievance.id} status to ${newStatus}`);
+      
+    } catch (error) {
+      console.error('Error updating grievance status:', error);
+      
+      // Revert the optimistic update on error
+      setGrievances(prev => prev.map((g, i) => i === rowIndex ? { ...g, status: grievance.status } : g));
+      
+      // Show error message
+      setError(`Failed to update status: ${error.message || 'Unknown error'}`);
+      
+      // Clear error after 5 seconds
+      setTimeout(() => setError(''), 5000);
+    } finally {
+      // Clear loading state
+      setUpdatingStatus(null);
+    }
   };
 
   const getStatusClasses = (status) => {
-    const statusLower = status.toLowerCase();
-    if (statusLower === 'open') return 'bg-blue-100 text-blue-800 border border-blue-200';
-    if (statusLower === 'in review') return 'bg-yellow-100 text-yellow-800 border border-yellow-200';
-    if (statusLower === 'in progress') return 'bg-orange-100 text-orange-800 border border-orange-200';
-    if (statusLower === 'resolved') return 'bg-green-100 text-green-800 border border-green-200';
-    if (statusLower === 'closed') return 'bg-gray-100 text-gray-800 border border-gray-200';
+    const statusUpper = status.toUpperCase();
+    if (statusUpper === 'OPEN') return 'bg-blue-100 text-blue-800 border border-blue-200';
+    if (statusUpper === 'IN_REVIEW') return 'bg-yellow-100 text-yellow-800 border border-yellow-200';
+    if (statusUpper === 'IN_PROGRESS') return 'bg-orange-100 text-orange-800 border border-orange-200';
+    if (statusUpper === 'RESOLVED') return 'bg-green-100 text-green-800 border border-green-200';
+    if (statusUpper === 'CLOSED') return 'bg-gray-100 text-gray-800 border border-gray-200';
     return 'bg-gray-100 text-gray-800 border border-gray-200';
   };
 
@@ -416,7 +449,7 @@ const Grievances = () => {
                     {STATUS_OPTIONS.map((st)=> (
                       <label key={st} className="inline-flex items-center gap-2">
                         <input type="checkbox" className="accent-blue-600" checked={selectedStatuses.includes(st)} onChange={(e)=> setSelectedStatuses((prev)=> e.target.checked ? [...prev, st] : prev.filter((x)=> x!==st))} />
-                        <span className="capitalize">{st}</span>
+                        <span className="capitalize">{st.replace('_', ' ')}</span>
                       </label>
                     ))}
                   </div>
@@ -507,9 +540,20 @@ const Grievances = () => {
                         <button
                           type="button"
                           onClick={()=> setOpenStatusRow(openStatusRow===idx ? null : idx)}
-                          className={`px-3 py-1 rounded-full text-xs font-medium shadow-sm ${getStatusClasses(row.status)}`}
+                          disabled={updatingStatus === idx}
+                          className={`px-3 py-1 rounded-full text-xs font-medium shadow-sm ${getStatusClasses(row.status)} ${updatingStatus === idx ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                          <span className="capitalize">{row.status}</span>
+                          {updatingStatus === idx ? (
+                            <span className="flex items-center gap-1">
+                              <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                              </svg>
+                              Updating...
+                            </span>
+                          ) : (
+                            <span className="capitalize">{row.status.replace('_', ' ')}</span>
+                          )}
                         </button>
                         {openStatusRow===idx && (
                           <div className="absolute z-10 mt-2 p-2 bg-white border border-gray-200 rounded-md shadow-lg min-w-[160px]">
@@ -519,9 +563,10 @@ const Grievances = () => {
                                   key={opt}
                                   type="button"
                                   onClick={()=>updateStatus(idx, opt)}
-                                  className={`px-3 py-1 rounded-full text-xs font-medium text-left ${getStatusClasses(opt)}`}
+                                  disabled={updatingStatus === idx}
+                                  className={`px-3 py-1 rounded-full text-xs font-medium text-left ${getStatusClasses(opt)} ${updatingStatus === idx ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
-                                  <span className="capitalize">{opt}</span>
+                                  <span className="capitalize">{opt.replace('_', ' ')}</span>
                                 </button>
                               ))}
                             </div>

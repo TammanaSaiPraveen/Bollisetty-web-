@@ -528,17 +528,53 @@ export const deleteNotification = async (notificationId) => {
 
 // ===== Users API =====
 export const listUsers = async ({ skip = 0, limit = 25 } = {}) => {
-  const params = new URLSearchParams({ skip: String(skip), limit: String(limit) });
-  const response = await fetch(`${BASE_URL}/api/users?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
-  if (!response.ok) throw new Error(await response.text());
-  return await response.json();
+  try {
+    const params = new URLSearchParams({ skip: String(skip), limit: String(limit) });
+    const response = await fetch(`${BASE_URL}/api/users?${params.toString()}`, { 
+      method: 'GET', 
+      headers: getAuthHeaders(),
+      mode: 'cors'
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('listUsers API Error:', response.status, errorText);
+      throw new Error(`Failed to fetch users: ${response.status} - ${errorText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('listUsers Network Error:', error);
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error('Network error: Unable to connect to server. Please check your internet connection.');
+    }
+    throw error;
+  }
 };
 
 export const listUsersAdmin = async ({ skip = 0, limit = 25 } = {}) => {
-  const params = new URLSearchParams({ skip: String(skip), limit: String(limit) });
-  const response = await fetch(`${BASE_URL}/api/users/admin/all?${params.toString()}`, { method: 'GET', headers: getAuthHeaders() });
-  if (!response.ok) throw new Error(await response.text());
-  return await response.json();
+  try {
+    const params = new URLSearchParams({ skip: String(skip), limit: String(limit) });
+    const response = await fetch(`${BASE_URL}/api/users/admin/all?${params.toString()}`, { 
+      method: 'GET', 
+      headers: getAuthHeaders(),
+      mode: 'cors'
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('listUsersAdmin API Error:', response.status, errorText);
+      throw new Error(`Failed to fetch admin users: ${response.status} - ${errorText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('listUsersAdmin Network Error:', error);
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error('Network error: Unable to connect to server. Please check your internet connection.');
+    }
+    throw error;
+  }
 };
 
 export const getUserByEmail = async (email) => {
